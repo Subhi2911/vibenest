@@ -8,6 +8,7 @@ import Notify from './components/Notify';
 import Signup from './components/Signup';
 import Read from './components/Read';
 
+
 function App() {
   
   return (
@@ -17,10 +18,10 @@ function App() {
           <Navbar/>
           <Routes>
             <Route path='/' element ={<Blogs/>}/>
-            <Route path='/addBlog' element={<AddBlog/>}/>
+            <Route path='/addBlog' element={<AddBlog />}/>
             <Route path='/notofication' element={<Notify/>}/>
             <Route path='/signup' element={<Signup/>}/>
-            <Route path='/read' element={<Read/>}/>
+            <Route path='/read/:id' element={<Read/>}/>
           </Routes>
         </BlogState>
       </BrowserRouter>

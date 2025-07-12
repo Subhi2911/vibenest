@@ -1,23 +1,25 @@
-import React, { useContext, useEffect } from 'react'
+import { useParams } from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
 import BlogContext from '../context/blogs/blogContext';
 
-const Read = (props) => {
-    const context = useContext(BlogContext); 
-    const {fetchMyBlogs} = context;
-    const{blog}=props;
-    useEffect(() => {
-            fetchMyBlogs(blog._id);
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, []);
+export default function Read() {
+  const { id } = useParams();
+  const { blogs } = useContext(BlogContext);
+  const [blog, setBlog] = useState(null);
 
-    return (
-        <>
-            <div>
-                <img src={`http://localhost:5000${blog.imageurl}`} alt="image-top" style={{ width: '100%', height: '20rem', objectFit: 'cover' }} />
-            </div>
-            
-        </>
-    )
-    }
+  useEffect(() => {
+    const found = blogs.find((b) => b._id === id);
+    setBlog(found);
+  }, [blogs, id]);
 
-export default Read
+  if (!blog) return <p>Loading...</p>;
+
+  return (
+    <div className="container my-3">
+        <img src={`http://localhost:5000${blog.imageurl}`} alt="cover" style={{ width: '100%', height:'50rem' }} />
+        <h2 className='d-flex justify-content-center'>{blog.title}</h2>
+        
+        <p>{blog.content}</p>
+    </div>
+  );
+}

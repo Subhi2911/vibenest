@@ -7,7 +7,9 @@ import AddBlog from './components/AddBlog'
 import Notify from './components/Notify';
 import Signup from './components/Signup';
 import Read from './components/Read';
-
+import Login from './components/Login';
+import Profile from './components/Profile';
+import MyBlogs from './components/MyBlogs';
 
 function App() {
   
@@ -22,6 +24,9 @@ function App() {
             <Route path='/notofication' element={<Notify/>}/>
             <Route path='/signup' element={<Signup/>}/>
             <Route path='/read/:id' element={<Read/>}/>
+            <Route path='/login' element={<Login/>}/>
+            <Route path='/profile' element={<Profile/>}/> 
+            <Route path='/myblogs' element={<MyBlogs/>}/>
           </Routes>
         </BlogState>
       </BrowserRouter>

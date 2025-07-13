@@ -1,35 +1,107 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import BlogContext from '../context/blogs/blogContext';
-import { useNavigate } from 'react-router-dom';
 
-
-export default function BlogItem(props) {
-    const navigate = useNavigate()
-    const context = useContext(BlogContext);
-    const{blog}=props;
-    const handleClick=()=>{
-        navigate(`/read/${blog._id}`) 
-    }
-
+export default function BlogItem({ blog, updateBlog}) {
     
+    const context= useContext(BlogContext)
+    const{deleteBlog}=context
+    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const host = 'http://localhost:5000';
+    const token = localStorage.getItem('token');
+
+    const formattedDate = new Date(blog.updatedAt).toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
+    const location = useLocation();
+
+    const handleClick = () => {
+        if (token) {
+            navigate(`/read/${blog._id}`);
+        } else {
+            navigate('/login');
+        }
+    };
+
+    const handleDelete = () => {
+        deleteBlog(blog._id);
+        //props.showAlert("Note deleted successfully!", "success");
+    };
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await fetch(`${host}/api/auth/getuser`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "auth-token": token,
+                    },
+                });
+                const json = await response.json();
+                setUser(json);
+            } catch (error) {
+                console.error("Error fetching user:", error);
+            }
+        };
+
+        if (token) {
+            fetchUser();
+        }
+    }, [token]);
+
+    const isOwner = user?.username === blog.author?.username;
+
     return (
-        <div >
-            <div className="card" style={{width:'18rem'}}>
-                <span className=" badge rounded-pill bg-danger " style={{display:'flex',
-                justifyContent:'flex-end', 
-                position:'absolute',
-                right:'0'}}
+        <div>
+            <div className="card" style={{ width: '18rem' }}>
+                <span
+                    className="badge rounded-pill bg-danger"
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        position: 'absolute',
+                        right: '0',
+                    }}
                 >
-                {blog.author?.username}
-                
+                    {blog.author?.username}
                 </span>
-                <img src={`http://localhost:5000${blog.imageurl}`} className="card-img-top" alt="image-top" style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-                    <div className="card-body">
-                        <h5 className="card-title">{blog.title}</h5>
-                        <p className="card-text">{(blog.content).slice(0,50)}</p>
-                        <button onClick={handleClick} className="btn btn-primary">Read</button>
+
+                <img
+                    src={blog.imageurl}
+                    className="card-img-top"
+                    alt="blog"
+                    style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                />
+
+                <div className="card-body">
+                    <h5 className="card-title">{blog.title}</h5>
+                    <p className="card-text">
+                        {DOMPurify.sanitize(blog.content.replace(/<[^>]+>/g, '')).slice(0, 100)}...
+                    </p>
+                    <p className="card-text">
+                        <small className="text-body-secondary">Last updated {formattedDate}</small>
+                    </p>
+
+                    <div className="d-flex">
+                        <button onClick={handleClick} className="btn btn-primary mx-2">Read</button>
+                        {isOwner && location.pathname==='/myblogs'&& (
+                            <>
+                                <div className="mx-3 my-1" onClick={()=>{updateBlog(blog)}} style={{ cursor: 'pointer' }}>
+                                    <i className="fa-solid fa-pen-to-square"></i>
+                                </div>
+                                <div className="my-1" style={{ cursor: 'pointer' }} onClick={handleDelete}>
+                                    <i className="fa-solid fa-trash"></i>
+                                </div>
+                            </>
+                        )}
                     </div>
+                </div>
             </div>
         </div>
-    )
+    );
 }

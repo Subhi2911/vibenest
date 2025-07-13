@@ -10,7 +10,6 @@ export default function Avatar({ name = "", size = 50, width = 11,
         .join('')
         .toUpperCase();
 
-
     const background = theme === 'light' ? '#0B1D51' : '#F1E7E7';
     const color = theme === 'light' ? '#F1E7E7' : '#0B1D51';
 

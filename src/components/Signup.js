@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Signup = (props) => {
     const host = 'http://localhost:5000';
@@ -75,11 +75,15 @@ return (
                 </div>
                 <div className="mb-3">
                     <label htmlFor="cpassword" className="form-label">Confirm Password</label>
-                    <input type="cpassword" className="form-control" id="cpassword" onChange={onChange} value={credentials.cpassword} name='cpassword' />
-                    <div id="passwordHelp" disabled={credentials.password!==credentials.cpassword} className="form-text">Password is not matching.</div>
+                    <input type="password" className="form-control" id="cpassword" onChange={onChange} value={credentials.cpassword} name='cpassword' />
+                    <div style={{height:'0.8rem'}}>
+                        <div id="passwordHelp" style={{visibility: credentials.password===credentials.cpassword?'hidden':'visible',transition: 'visibility 0.2s ease'}} className="form-text">Password is not matching.</div>
+                    </div>
+                    
                 </div>
 
                 <button type="submit" className="btn btn-primary">Submit</button>
+                <p className='mx-1 my-3'>Already have an account? <Link className="btn btn-outline-success mx-3 my-1" to='/login' type="submit">Login</Link></p>
             </form>
         </div>
     </div>

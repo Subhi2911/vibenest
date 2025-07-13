@@ -10,6 +10,7 @@ import Read from './components/Read';
 import Login from './components/Login';
 import Profile from './components/Profile';
 import MyBlogs from './components/MyBlogs';
+import Search from './components/Search';
 
 function App() {
   
@@ -27,6 +28,7 @@ function App() {
             <Route path='/login' element={<Login/>}/>
             <Route path='/profile' element={<Profile/>}/> 
             <Route path='/myblogs' element={<MyBlogs/>}/>
+            <Route path='/search' element={<Search/>}/>
           </Routes>
         </BlogState>
       </BrowserRouter>

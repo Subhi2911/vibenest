@@ -40,17 +40,23 @@ const BlogState = (props) => {
 
     }
 
-    //get blogs by id 
-    const fetchMyBlogs = async (id) => {
-        const response = await fetch(`${host}/api/blogs/getblog/${id}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        });
-        const json = await response.json();
-        setBlogs(Array.isArray(json) ? json : json.blogs || [])
-    }
+    //get blog by id 
+    const getBlogById = async (id) => {
+        try {
+            const response = await fetch(`${host}/api/blogs/getblog/${id}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            });
+
+            const json = await response.json();
+            return json;  
+        } catch (error) {
+            console.error("Error fetching blog by ID:", error);
+            return null;
+        }
+    };
 
     //Delete a note
     const deleteBlog = async (id) => {
@@ -96,39 +102,39 @@ const BlogState = (props) => {
         }
     };
     //Edit a blog
-    const editBlog = async(id,title,content,imageurl) =>{
+    const editBlog = async (id, title, content, imageurl) => {
         //API call
         const response = await fetch(`${host}/api/blogs/updateblog/${id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "auth-token": localStorage.getItem('token')
-        },
-        body: JSON.stringify({ title,content,imageurl }),
-        // …
-        
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "auth-token": localStorage.getItem('token')
+            },
+            body: JSON.stringify({ title, content, imageurl }),
+            // …
+
         });
         // eslint-disable-next-line no-unused-vars
         const json = await response.json();
         let newBlogs = JSON.parse(JSON.stringify(blogs));
-        
+
 
         for (let index = 0; index < blogs.length; index++) {
             const element = blogs[index];
-            if (element._id === id){
-                newBlogs[index].title =title;
-                newBlogs[index].content= content;
-                newBlogs[index].imageurl= imageurl;
+            if (element._id === id) {
+                newBlogs[index].title = title;
+                newBlogs[index].content = content;
+                newBlogs[index].imageurl = imageurl;
                 break;
             }
-            
+
         }
         setBlogs(newBlogs);
     }
 
 
     return (
-        <BlogContext.Provider value={{ blogs, getBlogs, addBlog, deleteBlog, fetchMyBlogs, fetchAuthorBlogs,editBlog }}>
+        <BlogContext.Provider value={{ blogs, getBlogs, addBlog, deleteBlog, getBlogById, fetchAuthorBlogs, editBlog }}>
             {props.children}
         </BlogContext.Provider>
     )

@@ -3,10 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import BlogContext from '../context/blogs/blogContext';
 
-export default function BlogItem({ blog, updateBlog}) {
-    
-    const context= useContext(BlogContext)
-    const{deleteBlog}=context
+export default function BlogItem({ blog, updateBlog }) {
+
+    const context = useContext(BlogContext)
+    const { deleteBlog } = context
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const host = 'http://localhost:5000';
@@ -44,6 +44,7 @@ export default function BlogItem({ blog, updateBlog}) {
                 });
                 const json = await response.json();
                 setUser(json);
+
             } catch (error) {
                 console.error("Error fetching user:", error);
             }
@@ -51,6 +52,7 @@ export default function BlogItem({ blog, updateBlog}) {
 
         if (token) {
             fetchUser();
+
         }
     }, [token]);
 
@@ -58,19 +60,7 @@ export default function BlogItem({ blog, updateBlog}) {
 
     return (
         <div>
-            <div className="card" style={{ width: '18rem' }}>
-                <span
-                    className="badge rounded-pill bg-danger"
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        position: 'absolute',
-                        right: '0',
-                    }}
-                >
-                    {blog.author?.username}
-                </span>
-
+            <div className="card" style={{ height: '35rem', overflow: 'hidden' }}>
                 <img
                     src={blog.imageurl}
                     className="card-img-top"
@@ -78,22 +68,34 @@ export default function BlogItem({ blog, updateBlog}) {
                     style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                 />
 
-                <div className="card-body">
+                <div className="card-body d-flex flex-column" style={{ height: 'calc(100% - 200px)' }}>
                     <h5 className="card-title">{blog.title}</h5>
+                    <figcaption className="blockquote-footer my-2" style={{ marginLeft: '2rem' }}>
+                        Published by <cite title="Source Title">{blog.author?.username}</cite>
+                    </figcaption>
                     <p className="card-text">
                         {DOMPurify.sanitize(blog.content.replace(/<[^>]+>/g, '')).slice(0, 100)}...
                     </p>
                     <p className="card-text">
                         <small className="text-body-secondary">Last updated {formattedDate}</small>
                     </p>
-
-                    <div className="d-flex">
+                    <div>
+                        <p>Average Rating: ⭐{blog?.averageRating?.toFixed(1)}/5</p>
+                    </div>
+                    <div className="d-flex mt-auto">
                         <button onClick={handleClick} className="btn btn-primary mx-2">Read</button>
-                        {isOwner && location.pathname==='/myblogs'&& (
+                        {isOwner && location.pathname === '/myblogs' && (
                             <>
-                                <div className="mx-3 my-1" onClick={()=>{updateBlog(blog)}} style={{ cursor: 'pointer' }}>
+                                <div
+                                    className="mx-3 my-1"
+                                    onClick={() => {
+                                        updateBlog(blog);
+                                    }}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <i className="fa-solid fa-pen-to-square"></i>
                                 </div>
+
                                 <div className="my-1" style={{ cursor: 'pointer' }} onClick={handleDelete}>
                                     <i className="fa-solid fa-trash"></i>
                                 </div>
@@ -101,6 +103,7 @@ export default function BlogItem({ blog, updateBlog}) {
                         )}
                     </div>
                 </div>
+
             </div>
         </div>
     );

@@ -3,18 +3,19 @@ import BlogItem from './BlogItem';
 import BlogContext from '../context/blogs/blogContext';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import Spinner from './Spinner';
 
 export default function Blogs(props) {
     const context = useContext(BlogContext);
     const { blogs, getBlogs, editBlog } = context;
-
+    const [loading, setLoading] = useState(true);
     const [blog, setBlog] = useState({ id: '', etitle: '', econtent: '', eimageurl: '' });
     const [coverUrl, setCoverUrl] = useState('');
     const ref = useRef(null);
     const refClose = useRef(null);
 
     useEffect(() => {
-        getBlogs();
+        getBlogs().then(()=>setLoading(false));
         // eslint-disable-next-line
     }, []);
 
@@ -49,7 +50,7 @@ export default function Blogs(props) {
         const formData = new FormData();
         formData.append('image', blog.eimageurl);
         try {
-            const response = await fetch('http://localhost:5000/api/upload-image', {
+            const response = await fetch('http://localhost:5000/api/blogs/upload-image', {
                 method: 'POST',
                 body: formData,
             });
@@ -101,11 +102,15 @@ export default function Blogs(props) {
                                 <button className="btn btn-secondary mt-2" onClick={uploadCover}>
                                     Upload Cover
                                 </button>
-                                {coverUrl && (
+                                {coverUrl ? (
                                     <div className="mt-3">
                                         <img src={coverUrl} alt="Cover" width="300" />
                                     </div>
-                                )}
+                                ) : typeof blog.eimageurl === 'string' && blog.eimageurl ? (
+                                    <div className="mt-3">
+                                        <img src={blog.eimageurl} alt="Cover" width="300" />
+                                    </div>
+                                ) : null}
                             </div>
 
                             <div className="mb-3">
@@ -147,17 +152,25 @@ export default function Blogs(props) {
             </div>
 
             {/* Blogs list */}
-            <div className="container my-3">
-                <div className="d-flex flex-wrap justify-content-start gap-4">
-                    {Array.isArray(blogs) && blogs.map((blogItem) => (
-                        <BlogItem
-                            key={blogItem._id}
-                            blog={blogItem}
-                            updateBlog={updateBlog}
-                        />
-                    ))}
-                </div>
+            <div className='container my-4 text-center' >
+                <h2>VibeNest- Blogs</h2>
             </div>
+            {loading? (
+                <div className="d-flex justify-content-center my-5">
+                    <Spinner/>
+                </div>
+            ):(
+                <div className="container my-3">
+                    <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
+                        {Array.isArray(blogs) && [...blogs].reverse().map((blogItem)  => (
+                            <div key={blogItem._id} className="col d-flex justify-content-center">
+                                <BlogItem blog={blogItem} updateBlog={updateBlog} />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            
         </>
     );
 }

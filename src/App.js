@@ -11,6 +11,7 @@ import Login from './components/Login';
 import Profile from './components/Profile';
 import MyBlogs from './components/MyBlogs';
 import Search from './components/Search';
+import AboutAuthor from './components/AboutAuthor';
 
 function App() {
   
@@ -22,13 +23,14 @@ function App() {
           <Routes>
             <Route path='/' element ={<Blogs/>}/>
             <Route path='/addBlog' element={<AddBlog />}/>
-            <Route path='/notofication' element={<Notify/>}/>
+            <Route path='/notifications' element={<Notify/>}/>
             <Route path='/signup' element={<Signup/>}/>
             <Route path='/read/:id' element={<Read/>}/>
             <Route path='/login' element={<Login/>}/>
             <Route path='/profile' element={<Profile/>}/> 
             <Route path='/myblogs' element={<MyBlogs/>}/>
             <Route path='/search' element={<Search/>}/>
+            <Route path='/aboutauthor/:username' element={<AboutAuthor/>}/>
           </Routes>
         </BlogState>
       </BrowserRouter>

@@ -15,3 +15,6 @@ code {
 body {
   overflow-x: hidden;
 }
+.modal-dialog {
+  z-index: 2000 !important;
+}

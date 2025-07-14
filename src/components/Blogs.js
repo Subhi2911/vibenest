@@ -9,30 +9,52 @@ export default function Blogs(props) {
     const context = useContext(BlogContext);
     const { blogs, getBlogs, editBlog } = context;
     const [loading, setLoading] = useState(true);
-    const [blog, setBlog] = useState({ id: '', etitle: '', econtent: '', eimageurl: '' });
+    const [blog, setBlog] = useState({ id: '', ecategory: '', etitle: '', econtent: '', eimageurl: '' });
     const [coverUrl, setCoverUrl] = useState('');
     const ref = useRef(null);
     const refClose = useRef(null);
 
+    const categories = [
+        'Technology',
+        'Health & Wellness',
+        'Travel & Adventure',
+        'Lifestyle',
+        'Finance & Business',
+        'Food & Recipes',
+        'Education & Learning',
+        'Entertainment & Culture',
+        'Spiritual'
+    ];
+
     useEffect(() => {
-        getBlogs().then(()=>setLoading(false));
+        getBlogs().then(() => setLoading(false));
         // eslint-disable-next-line
     }, []);
 
     const updateBlog = (currentBlog) => {
-        ref.current.click();
         setBlog({
             id: currentBlog._id,
+            ecategory: currentBlog.category || '',
             etitle: currentBlog.title,
             econtent: currentBlog.content,
             eimageurl: currentBlog.imageurl,
         });
         setCoverUrl(currentBlog.imageurl);
+
+        setTimeout(() => {
+            ref.current?.click(); // open modal after state updates
+        }, 100);
     };
 
     const handleClick = async (e) => {
         e.preventDefault();
-        await editBlog(blog.id, blog.etitle, blog.econtent, blog.eimageurl);
+        await editBlog({
+            id: blog.id,
+            imageurl: blog.eimageurl,
+            category: blog.ecategory,
+            title: blog.etitle,
+            content: blog.econtent
+        });
         refClose.current.click();
         props.showAlert("Blog Updated Successfully!!", "success");
     };
@@ -62,16 +84,11 @@ export default function Blogs(props) {
         }
     };
 
-    const modalStyle = {
-        marginTop: '20px',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: '10px',
-    };
+    
 
     return (
         <>
-            {/* Hidden trigger button for modal */}
+            {/* Hidden trigger for modal */}
             <button
                 type="button"
                 ref={ref}
@@ -95,22 +112,35 @@ export default function Blogs(props) {
                                 aria-label="Close"
                             ></button>
                         </div>
-                        <div className="modal-body">
+                        <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                             <div className="mb-3">
                                 <label className="form-label">Cover Image</label>
                                 <input type="file" className="form-control" onChange={handleCoverChange} />
                                 <button className="btn btn-secondary mt-2" onClick={uploadCover}>
                                     Upload Cover
                                 </button>
-                                {coverUrl ? (
+                                {(coverUrl || (typeof blog.eimageurl === 'string' && blog.eimageurl)) && (
                                     <div className="mt-3">
-                                        <img src={coverUrl} alt="Cover" width="300" />
+                                        <img src={coverUrl || blog.eimageurl} alt="Cover" width="300" />
                                     </div>
-                                ) : typeof blog.eimageurl === 'string' && blog.eimageurl ? (
-                                    <div className="mt-3">
-                                        <img src={blog.eimageurl} alt="Cover" width="300" />
-                                    </div>
-                                ) : null}
+                                )}
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Category</label>
+                                <select
+                                    className="form-select"
+                                    name="ecategory"
+                                    value={blog.ecategory}
+                                    onChange={onChange}
+                                    required
+                                    style={{ background: 'white' }}
+                                >
+                                    <option value="">Select a category</option>
+                                    {categories.map((cat, index) => (
+                                        <option value={cat} key={index}>{cat}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="mb-3">
@@ -119,10 +149,16 @@ export default function Blogs(props) {
                                     type="text"
                                     className="form-control"
                                     name="etitle"
+                                    minLength={5}
+                                    maxLength={100}
                                     value={blog.etitle}
                                     onChange={onChange}
                                     placeholder="Enter blog title"
                                 />
+                                <div style={{
+                                    height: '2rem',
+                                    visibility: (blog.etitle.length > 100 || blog.etitle.length < 5) ? 'visible' : 'hidden'
+                                }} className='form-text'>Minimum 5 and Maximum 100 Characters required</div>
                             </div>
 
                             <div className="mb-3">
@@ -132,9 +168,14 @@ export default function Blogs(props) {
                                     value={blog.econtent}
                                     onChange={(value) => setBlog({ ...blog, econtent: value })}
                                 />
+                                <div style={{
+                                    height: '2rem',
+                                    visibility: (blog.econtent.length > 6000 || blog.econtent.length < 25) ? 'visible' : 'hidden'
+                                }} className='form-text'>Minimum 25 and Maximum 6000 Characters required</div>
                             </div>
                         </div>
-                        <div className="modal-footer" style={modalStyle}>
+
+                        <div className="modal-footer" >
                             <button ref={refClose} type="button" className="btn btn-secondary" data-bs-dismiss="modal">
                                 Close
                             </button>
@@ -142,7 +183,12 @@ export default function Blogs(props) {
                                 type="button"
                                 className="btn btn-primary"
                                 onClick={handleClick}
-                                disabled={blog.etitle.length < 5 || blog.econtent.length < 5}
+                                disabled={
+                                    blog.etitle.length < 5 ||
+                                    blog.etitle.length > 100 ||
+                                    blog.econtent.length < 25 ||
+                                    blog.econtent.length > 6000
+                                }
                             >
                                 Save Changes
                             </button>
@@ -151,18 +197,19 @@ export default function Blogs(props) {
                 </div>
             </div>
 
-            {/* Blogs list */}
-            <div className='container my-4 text-center' >
-                <h2>VibeNest- Blogs</h2>
+            {/* Blog list */}
+            <div className='container my-4 text-center'>
+                <h2>VibeNest - Blogs</h2>
             </div>
-            {loading? (
+
+            {loading ? (
                 <div className="d-flex justify-content-center my-5">
-                    <Spinner/>
+                    <Spinner />
                 </div>
-            ):(
+            ) : (
                 <div className="container my-3">
                     <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
-                        {Array.isArray(blogs) && [...blogs].reverse().map((blogItem)  => (
+                        {Array.isArray(blogs) && [...blogs].reverse().map((blogItem) => (
                             <div key={blogItem._id} className="col d-flex justify-content-center">
                                 <BlogItem blog={blogItem} updateBlog={updateBlog} />
                             </div>
@@ -170,7 +217,6 @@ export default function Blogs(props) {
                     </div>
                 </div>
             )}
-            
         </>
     );
 }

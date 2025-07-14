@@ -22,7 +22,7 @@ const BlogState = (props) => {
     };
 
     //Add a blog
-    const addBlog = async (imageurl, title, content) => {
+    const addBlog = async ( title, content, imageurl, category) => {
         //API call
         const response = await fetch(`${host}/api/blogs/createpvtblog`, {
             method: "POST",
@@ -30,7 +30,7 @@ const BlogState = (props) => {
                 "Content-Type": "application/json",
                 "auth-token": localStorage.getItem('token')
             },
-            body: JSON.stringify({ imageurl, title, content }),
+            body: JSON.stringify({ title, content, imageurl, category }),
             // …
 
         });
@@ -102,7 +102,7 @@ const BlogState = (props) => {
         }
     };
     //Edit a blog
-    const editBlog = async (id, title, content, imageurl) => {
+    const editBlog = async (id,title, content, imageurl, category) => {
         //API call
         const response = await fetch(`${host}/api/blogs/updateblog/${id}`, {
             method: "PUT",
@@ -110,7 +110,7 @@ const BlogState = (props) => {
                 "Content-Type": "application/json",
                 "auth-token": localStorage.getItem('token')
             },
-            body: JSON.stringify({ title, content, imageurl }),
+            body: JSON.stringify({ title, content, imageurl, category }),
             // …
 
         });
@@ -122,9 +122,11 @@ const BlogState = (props) => {
         for (let index = 0; index < blogs.length; index++) {
             const element = blogs[index];
             if (element._id === id) {
+                newBlogs[index].imageurl = imageurl;
+                newBlogs[index].category = category
                 newBlogs[index].title = title;
                 newBlogs[index].content = content;
-                newBlogs[index].imageurl = imageurl;
+                
                 break;
             }
 

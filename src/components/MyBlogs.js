@@ -3,17 +3,17 @@ import BlogItem from './BlogItem';
 import BlogContext from '../context/blogs/blogContext';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Spinner from './Spinner';
 
 const MyBlogs = (props) => {
-    const navigate=useNavigate();
+    const navigate = useNavigate();
     const context = useContext(BlogContext);
     const { blogs, fetchAuthorBlogs, editBlog } = context;
     const [loading, setLoading] = useState(true);
     // eslint-disable-next-line no-unused-vars
     const [username, setUsername] = useState(null);
-    const [blog, setBlog] = useState({ id: '', etitle: '', econtent: '', eimageurl: '' });
+    const [blog, setBlog] = useState({ id: '', ecategory:'',etitle: '', econtent: '', eimageurl: '' });
     const [coverUrl, setCoverUrl] = useState('');
     const ref = useRef(null);
     const refClose = useRef(null);
@@ -45,7 +45,7 @@ const MyBlogs = (props) => {
 
         fetchUsername();
         setLoading(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fetchAuthorBlogs]);
 
     const updateBlog = (currentBlog) => {
@@ -192,24 +192,30 @@ const MyBlogs = (props) => {
             <div className=' container my-3 text-center'>
                 <h2>VibeNest-Your Blogs </h2>
             </div>
-            {loading?(
+            {loading ? (
                 <div className="d-flex justify-content-center my-5">
                     <Spinner />
                 </div>
-            ):(
+            ) : (
                 <div className='container my-3'>
-                <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
-                    {Array.isArray(blogs) && blogs.length > 0 ? (
-                        blogs.map((blog) => (
-                            <div key={blog._id} className="col d-flex justify-content-center">
-                                <BlogItem blog={blog} updateBlog={updateBlog} />
+                    <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
+                        {Array.isArray(blogs) && blogs.length > 0 ? (
+                            blogs.map((blog) => (
+                                <div key={blog._id} className="col d-flex justify-content-center">
+                                    <BlogItem blog={blog} updateBlog={updateBlog} />
+                                </div>
+                            ))
+                        ) : (
+                            <div className='text-center'>
+                                <p >No blogs found.</p>
+                                <div >
+                                    <p className='my-2'>Start by creating one..</p>
+                                    <Link className=' mx-4 btn btn-outline-primary' to='/addblog' type='button'>Create Blog</Link>
+                                </div>
                             </div>
-                        ))
-                    ) : (
-                        <p>No blogs found.</p>
-                    )}
+                        )}
+                    </div>
                 </div>
-            </div>
             )}
         </div>
     );

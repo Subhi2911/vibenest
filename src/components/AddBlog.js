@@ -11,10 +11,22 @@ export default function AddBlog() {
   const [blog, setBlog] = useState({
     imageurl: '',
     title: '',
-    content: ''
+    content: '',
+    category:''
   });
   const [coverFile, setCoverFile] = useState(null);
   const [coverUrl, setCoverUrl] = useState('');
+  const categories = [
+    'Technology',
+    'Health & Wellness',
+    'Travel & Adventure',
+    'Lifestyle',
+    'Finance & Business',
+    'Food & Recipes',
+    'Education & Learning',
+    'Entertainment & Culture',
+    'Spiritual'
+  ];
 
   const handleChange = (e) => {
     setBlog({ ...blog, [e.target.name]: e.target.value });
@@ -55,12 +67,12 @@ export default function AddBlog() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!blog.imageurl || !blog.title || !blog.content) {
+    if (!blog.imageurl || !blog.title || !blog.content ||!blog.category) {
       alert("All fields are required!");
       return;
     }
     
-    addBlog(blog.imageurl, blog.title, blog.content);
+    addBlog( blog.title, blog.content, blog.imageurl,  blog.category );
     navigate('/');
   };
 
@@ -79,6 +91,15 @@ export default function AddBlog() {
           </div>
         )}
       </div>
+      <div className="mb-3">
+        <label className="form-label">Category</label>
+        <select className="form-select" name="category" value={blog.category} onChange={handleChange} required>
+          <option value="">Select a category</option>
+          {categories.map((cat, index) => (
+            <option value={cat} key={index}>{cat}</option>
+          ))}
+        </select>
+      </div>
 
       <div className="mb-3">
         <label htmlFor="title" className="form-label">Blog Title</label>
@@ -86,10 +107,13 @@ export default function AddBlog() {
           type="text"
           className="form-control"
           name="title"
+          maxLength={100}
+          minLength={5}
           value={blog.title}
           onChange={handleChange}
           placeholder="Enter blog title"
         />
+        <div style={{height:'2rem',visibility:(blog.title.length>100||blog.title.length<5)?'visible':'hidden'}} className='form-text'>Minimum 5  and Maximum 100 Characters required</div>
       </div>
 
       <div className="mb-3">
@@ -97,14 +121,19 @@ export default function AddBlog() {
         <ReactQuill
           theme="snow"
           value={content}
+          maxLength={2000}
+          minLength={25}
           onChange={(value) => {
             setContent(value);
             setBlog({ ...blog, content: value });
           }}
         />
+        <div style={{height:'2rem',visibility:(blog.content.length>6000||blog.content.length<25)?'visible':'hidden'}} className='form-text'>Minimum 25  and Maximum 6000 Characters required</div>
       </div>
 
-      <button className="btn btn-primary" onClick={handleSubmit}>
+      <button className="btn btn-primary" onClick={handleSubmit} 
+      disabled={blog.title.length < 5 || blog.content.length < 5||blog.content.length>6000||blog.title.length>100}
+      >
         Publish Blog
       </button>
     </div>

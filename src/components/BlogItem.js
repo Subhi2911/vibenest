@@ -82,12 +82,12 @@ export default function BlogItem({ blog, updateBlog }) {
                     <div>
                         <p>Average Rating: ⭐{blog?.averageRating?.toFixed(1)}/5</p>
                     </div>
-                    <div className="d-flex mt-auto">
+                    <div className="d-flex mt-auto" style={{zIndex:'1'}}>
                         <button onClick={handleClick} className="btn btn-primary mx-2">Read</button>
                         {isOwner && location.pathname === '/myblogs' && (
                             <>
                                 <div
-                                    className="mx-3 my-1"
+                                    className="mx-5 my-1"
                                     onClick={() => {
                                         updateBlog(blog);
                                     }}
@@ -96,7 +96,7 @@ export default function BlogItem({ blog, updateBlog }) {
                                     <i className="fa-solid fa-pen-to-square"></i>
                                 </div>
 
-                                <div className="my-1" style={{ cursor: 'pointer' }} onClick={handleDelete}>
+                                <div className="mx-3 my-1" style={{ cursor: 'pointer' }} onClick={handleDelete}>
                                     <i className="fa-solid fa-trash"></i>
                                 </div>
                             </>

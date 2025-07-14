@@ -13,10 +13,22 @@ const MyBlogs = (props) => {
     const [loading, setLoading] = useState(true);
     // eslint-disable-next-line no-unused-vars
     const [username, setUsername] = useState(null);
-    const [blog, setBlog] = useState({ id: '', ecategory:'',etitle: '', econtent: '', eimageurl: '' });
+    const [blog, setBlog] = useState({ id: '', ecategory: '', etitle: '', econtent: '', eimageurl: '' });
     const [coverUrl, setCoverUrl] = useState('');
     const ref = useRef(null);
     const refClose = useRef(null);
+    const categories = [
+        'General',
+        'Technology',
+        'Health',
+        'Travel',
+        'Lifestyle',
+        'Finance',
+        'Food',
+        'Education',
+        'Entertainment',
+        'Spiritual'
+    ];
 
     useEffect(() => {
         const userToken = localStorage.getItem('token');
@@ -53,6 +65,7 @@ const MyBlogs = (props) => {
         setBlog({
             id: currentBlog._id,
             etitle: currentBlog.title,
+            ecategory: currentBlog.category || 'General',
             econtent: currentBlog.content,
             eimageurl: currentBlog.imageurl,
         });
@@ -64,12 +77,16 @@ const MyBlogs = (props) => {
         }, 100);
     };
 
-
+    useEffect(() => {
+        if (blog.id) {
+            ref.current?.click();
+        }
+    }, [blog.id]);
 
     const handleClick = async (e) => {
         e.preventDefault();
         console.log("Sending ID to editBlog:", blog.id);
-        await editBlog(blog.id, blog.etitle, blog.econtent, blog.eimageurl);
+        await editBlog(blog.id, blog.etitle, blog.econtent, blog.eimageurl, blog.ecategory);
 
         refClose.current.click();
         props?.showAlert?.("Blog Updated Successfully!!", "success");
@@ -111,7 +128,7 @@ const MyBlogs = (props) => {
     };
 
     return (
-        <div style={{ display: 'flex-wrap' }}>
+        <div style={{ display: 'flex-wrap',marginTop:'5rem'}}>
             {/* Hidden trigger for modal */}
             <button
                 type="button"
@@ -148,6 +165,22 @@ const MyBlogs = (props) => {
                                         <img src={coverUrl} alt="Cover" width="300" />
                                     </div>
                                 )}
+                            </div>
+                            <div className="mb-3">
+                                <label className="form-label">Category</label>
+                                <select
+                                    className="form-select"
+                                    name="ecategory"
+                                    value={blog.ecategory}
+                                    onChange={onChange}
+                                    required
+                                    style={{ background: 'white' }}
+                                >
+                                    <option value="">Select a category</option>
+                                    {categories.map((cat, index) => (
+                                        <option value={cat} key={index}>{cat}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="mb-3">

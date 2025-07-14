@@ -12,31 +12,69 @@ import Profile from './components/Profile';
 import MyBlogs from './components/MyBlogs';
 import Search from './components/Search';
 import AboutAuthor from './components/AboutAuthor';
+import CategoryBlog from './components/CategoryBlog';
+import LoadingBar from "react-top-loading-bar";
+import { useState } from 'react';
+
 
 function App() {
-  
-  return (
-    <div >
-      <BrowserRouter>
-        <BlogState>
-          <Navbar/>
-          <Routes>
-            <Route path='/' element ={<Blogs/>}/>
-            <Route path='/addBlog' element={<AddBlog />}/>
-            <Route path='/notifications' element={<Notify/>}/>
-            <Route path='/signup' element={<Signup/>}/>
-            <Route path='/read/:id' element={<Read/>}/>
-            <Route path='/login' element={<Login/>}/>
-            <Route path='/profile' element={<Profile/>}/> 
-            <Route path='/myblogs' element={<MyBlogs/>}/>
-            <Route path='/search' element={<Search/>}/>
-            <Route path='/aboutauthor/:username' element={<AboutAuthor/>}/>
-          </Routes>
-        </BlogState>
-      </BrowserRouter>
-      
-    </div>
-  );
+    const [progress, setProgress] = useState(0);
+    const [color, setColor]=useState('red')
+
+    const setprogress = (progress) => {
+        setProgress(progress)
+    }
+    const loaderColor=(color)=>{
+        setColor(color);
+    }
+
+    const categories = {
+        General: '#000000',
+        Technology: '#1E88E5',
+        Health: '#43A047',
+        Travel: '#F4511E',
+        Lifestyle: '#8E24AA',
+        Finance: '#3949AB',
+        Food: '#D81B60',
+        Education: '#FB8C00',
+        Entertainment: '#5E35B1',
+        Spiritual: '#00897B'
+    };
+    return (
+        <div >
+            <BrowserRouter>
+                <BlogState>
+                    <Navbar />
+                    <LoadingBar
+                        height='3px'
+                        color={color}
+                        progress={progress}
+                        onLoaderFinished={() => { setProgress(0) }}
+                    />
+                    <Routes>
+                        <Route path='/' element={<Blogs setprogress={setprogress} />} />
+                        <Route path='/addBlog' element={<AddBlog setprogress={setprogress} />} />
+                        <Route path='/notifications' element={<Notify setprogress={setprogress} />} />
+                        <Route path='/signup' element={<Signup setprogress={setprogress} />} />
+                        <Route path='/read/:id' element={<Read setprogress={setprogress} />} />
+                        <Route path='/login' element={<Login setprogress={setprogress} />} />
+                        <Route path='/profile' element={<Profile setprogress={setprogress} />} />
+                        <Route path='/myblogs' element={<MyBlogs setprogress={setprogress} />} />
+                        <Route path='/search' element={<Search setprogress={setprogress} />} />
+                        <Route path='/aboutauthor/:username' element={<AboutAuthor setprogress={setprogress} />} />
+                        {Object.entries(categories).map(([path, color]) => (
+                            <Route
+                                key={path}
+                                path={`/${path}`}
+                                element={<CategoryBlog category={path} color={color} loaderColor={loaderColor} setprogress={setprogress} />}
+                            />
+                        ))}
+                    </Routes>
+                </BlogState>
+            </BrowserRouter>
+
+        </div>
+    );
 }
 
 export default App;

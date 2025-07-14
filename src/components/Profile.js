@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Avatar from './Avatar';
 import Spinner from './Spinner';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = (props) => {
     const [user, setUser] = useState(null);
@@ -8,9 +9,14 @@ const Profile = (props) => {
     const token = localStorage.getItem("token");
     const [bio, setBio] = useState('')
     const refClose = useRef(null);
+    const navigate= useNavigate();
 
     useEffect(() => {
+        if (!token || token === undefined || token ===null){
+            return navigate('/login')
+        }
         const fetchUser = async () => {
+            props.setprogress(10);
             try {
                 const response = await fetch(`${host}/api/auth/getuser`, {
                     method: "POST",
@@ -19,8 +25,11 @@ const Profile = (props) => {
                         "auth-token": token,
                     },
                 });
+                props.setprogress(50);
                 const json = await response.json();
+                props.setprogress(70);
                 setUser(json);
+                props.setprogress(90);
                 setBio(json.bio || ''); // initialize editable bio
             } catch (error) {
                 console.error("Error fetching user:", error);
@@ -29,7 +38,9 @@ const Profile = (props) => {
 
         if (token) {
             fetchUser();
+            props.setprogress(100);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     const changeBio = async () => {
@@ -65,7 +76,7 @@ const Profile = (props) => {
 
     if (!user) {
         return (
-            <div className='container' >
+            <div className='container text-center' >
                 <Spinner />
             </div>
         );

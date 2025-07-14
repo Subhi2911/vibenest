@@ -122,11 +122,10 @@ const BlogState = (props) => {
         for (let index = 0; index < blogs.length; index++) {
             const element = blogs[index];
             if (element._id === id) {
-                newBlogs[index].imageurl = imageurl;
-                newBlogs[index].category = category
                 newBlogs[index].title = title;
                 newBlogs[index].content = content;
-                
+                newBlogs[index].imageurl = imageurl;
+                newBlogs[index].category = category
                 break;
             }
 
@@ -134,9 +133,20 @@ const BlogState = (props) => {
         setBlogs(newBlogs);
     }
 
+    //Fetching categorised Blogs
+    const fetchCatBlogs= async(category)=>{
+        const response = await fetch(`${host}/api/blogs/categoryblog/${category}`,{
+            method:"GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+        });
+        const json = await response.json();
+        setBlogs(Array.isArray(json) ? json : json.blogs || [])
+    }
 
     return (
-        <BlogContext.Provider value={{ blogs, getBlogs, addBlog, deleteBlog, getBlogById, fetchAuthorBlogs, editBlog }}>
+        <BlogContext.Provider value={{ blogs, getBlogs, addBlog, deleteBlog, getBlogById, fetchAuthorBlogs, editBlog ,fetchCatBlogs }}>
             {props.children}
         </BlogContext.Provider>
     )

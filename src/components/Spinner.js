@@ -2,7 +2,7 @@ import React from 'react'
 
 const Spinner = () => {
     return (
-        <div>
+        <div style={{marginTop:'5rem'}}>
             <div class="spinner-border text-dark" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>

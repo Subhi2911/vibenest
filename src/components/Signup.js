@@ -19,6 +19,7 @@ const Signup = (props) => {
         }
 
         try {
+            props.setprogress(0);
             const response = await fetch(`${host}/api/auth/createuser`, {
                 method: "POST",
                 headers: {
@@ -30,9 +31,10 @@ const Signup = (props) => {
                     password: credentials.password
                 }),
             });
-
+            props.setprogress(30);
             let json = {};
             const text = await response.text(); // first get raw text
+            props.setprogress(70);
             try {
                 json = JSON.parse(text); // try to parse JSON
             } catch (err) {
@@ -43,6 +45,7 @@ const Signup = (props) => {
 
 
                 navigate("/");
+                props.setprogress(100);
                 props.showAlert("Account Created Successfully!", "success");
             } else {
                 //props.showAlert(json.error || "Signup failed", "danger");
@@ -54,9 +57,9 @@ const Signup = (props) => {
     };
 
 return (
-    <div>
+    <div style={{marginTop:'1rem'}}>
         <div className='container'>
-            <h2 style={{marginBottom:'2rem'}}>Create an account to continue</h2>
+            <h2 style={{marginBottom:'2rem'}}>Create an account to continue..</h2>
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label htmlFor="username" className="form-label">Username</label>

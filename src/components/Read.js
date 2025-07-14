@@ -8,81 +8,110 @@ export default function Read(props) {
     const { id } = useParams();
     const { blogs, getBlogById } = useContext(BlogContext);
     const [blog, setBlog] = useState(null);
+    const [loading, setLoading] = useState(true); // ✅ New loading state
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
-    const host = 'http://localhost:5000'
+    const host = 'http://localhost:5000';
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token || token === 'undefined' || token === 'null') {
-            navigate('/login');
-        }
+        const fetchData = async () => {
+            props.setprogress(10);
 
-        const found = blogs.find((b) => b._id === id);
-        if (found) {
-            setBlog(found);
-        } else {
-            // Fetch directly from server if not in context
-            (async () => {
-                const fetched = await getBlogById(id);
-                if (fetched) setBlog(fetched);
-            })();
-        }
+            if (!token || token === 'undefined' || token === 'null') {
+                props.setprogress(100);
+                navigate('/login');
+                return;
+            }
+
+            props.setprogress(30);
+            let found = blogs.find((b) => b._id === id);
+
+            if (found) {
+                setBlog(found);
+                props.setprogress(100);
+                setLoading(false);
+            } else {
+                try {
+                    const fetched = await getBlogById(id);
+                    props.setprogress(70);
+                    if (fetched) {
+                        setBlog(fetched);
+                    }
+                    props.setprogress(100);
+                    setLoading(false);
+                } catch (error) {
+                    console.error('Error fetching blog:', error);
+                    props.setprogress(100);
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [blogs, id, getBlogById, navigate]);
 
+    if (loading || !blog) {
+        return (
+            <div className="d-flex justify-content-center my-5">
+                <Spinner />
+            </div>
+        );
+    }
 
-    if (!blog)
-        return <div className="d-flex justify-content-center my-5">
-            <Spinner />
-        </div>
     const formattedDate = new Date(blog.updatedAt).toLocaleDateString('en-IN', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
     });
-    const handleClick=()=>{
-        if (token) {
-            navigate(`/read/${blog.author?.username}`);
-        } else {
-            navigate('/login');
-        }
-    }
 
     return (
-        <div className="container my-3">
-            <h2 className='d-flex justify-content-center my-3'>{blog.title}</h2>
-            <div className='d-flex flex-column align-items-end mb-3'>
-                <figcaption className="blockquote-footer my-2" style={{ marginLeft: '2rem' }}>
-                    Published by <cite title="Source Title">{blog.author?.username}</cite>
-                </figcaption>
-                <small className="text-body-secondary">Last updated {formattedDate}</small>
-            </div>
-            <img src={blog.imageurl} alt="cover" style={{ width: '100%', height: 'auto' }} />
+        <div style={{ marginTop: '1rem' }}>
+            <div className="container my-2">
+                <h2 className="d-flex justify-content-center my-3">{blog.title}</h2>
+                <div className="d-flex flex-column align-items-end mb-3">
+                    <small className="my-1">Category: {blog.category}</small>
+                    <figcaption className="blockquote-footer my-2">
+                        Published by <cite title="Author">{blog.author?.username}</cite>
+                    </figcaption>
+                    <small className="text-body-secondary">Last updated {formattedDate}</small>
+                </div>
 
+                <img src={blog.imageurl} alt="cover" style={{ width: '100%', height: 'auto' }} />
 
-            <div className="my-4" dangerouslySetInnerHTML={{ __html: blog.content }} />
-            <hr />
-            <div className='d-flex justify-content-center' >
-                <p className='mx-3 my-2'>Rate The Blog </p>
-                <div >
+                <div className="my-4" dangerouslySetInnerHTML={{ __html: blog.content }} />
+
+                <hr />
+
+                <div className="d-flex justify-content-center">
+                    <p className="mx-3 my-2">Rate The Blog</p>
                     <Ratings
                         blogId={blog._id}
                         initialRating={blog.averageRating}
                         onRate={(newRating) => {
-                            // Send newRating to your backend API to save
                             fetch(`${host}/api/blogs/${blog._id}/rate`, {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'auth-token': token },
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'auth-token': token,
+                                },
                                 body: JSON.stringify({ rating: newRating }),
-                            }).then(res => res.json())
+                            })
+                                .then(res => res.json())
                                 .then(data => console.log('Rating saved', data))
                                 .catch(console.error);
                         }}
                     />
                 </div>
-            </div>
-            <div className='d-flex justify-content-center'>
-                <p>Click to Know More About the author <Link style={{fontStyle:'italic'}} onClick={handleClick} to={`/aboutauthor/${blog.author?.username}`}>{blog.author?.username}</Link></p>
+
+                <div className="d-flex justify-content-center">
+                    <p>
+                        Click to know more about the author{' '}
+                        <Link style={{ fontStyle: 'italic' }} to={`/aboutauthor/${blog.author?.username}`}>
+                            {blog.author?.username}
+                        </Link>
+                    </p>
+                </div>
             </div>
         </div>
     );

@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-const Login = () => {
-    const host = 'http://localhost:5000'
+const Login = (props) => {
+    const host = process.env.BACKEND_URL
     const navigate = useNavigate()
     const [credentials, setCredentials] = useState({ email: '', password: '' });
 
@@ -10,15 +10,19 @@ const Login = () => {
         setCredentials({ ...credentials, [e.target.name]: e.target.value })
     }
     const handleSubmit = async (e) => {
+        props.setprogress(0);
         e.preventDefault();
         //fetch("http://localhost:5000/api/auth/login")
+        props.setprogress(30);
         const response = await fetch(`${host}/api/auth/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({ email: credentials.email, password: credentials.password }),
+            
         });
+        props.setprogress(70)
         const json = await response.json();
 
         if (json.success) {
@@ -26,6 +30,7 @@ const Login = () => {
             localStorage.setItem('token', json.authToken);
             //props.showAlert("Logged in Successfully!! ","success" )
             navigate('/');
+            props.setprogress(100)
 
         }
         else {

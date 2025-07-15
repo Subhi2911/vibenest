@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function CategoryNavbar() {
+    const location = useLocation();
     let myStyle = {
-        textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-        fontWeight: '600',
+        WebkitTextStroke: '0.3px black',
         fontSize: '0.9rem',
         width: '100%',
         display: 'block',
@@ -31,15 +31,15 @@ export default function CategoryNavbar() {
             <div className="container-fluid">
                 <div className="collapse navbar-collapse show">
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0 flex-nowrap w-100">
-                        <li className="nav-item"><Link style={{ color: '#1E88E5', ...myStyle }} className="nav-link active" to='/Technology'>Technology</Link></li>
-                        <li className="nav-item"><Link style={{ color: '#43A047', ...myStyle }} className="nav-link active" to='/Health'>Health & Wellness</Link></li>
-                        <li className="nav-item"><Link style={{ color: '#F4511E', ...myStyle }} className="nav-link active" to='/Travel'>Travel & Adventure</Link></li>
-                        <li className="nav-item"><Link style={{ color: '#8E24AA', ...myStyle }} className="nav-link active" to='/Lifestyle'>Lifestyle</Link></li>
-                        <li className="nav-item"><Link style={{ color: '#3949AB', ...myStyle }} className="nav-link active" to='/Finance'>Finance & Business</Link></li>
-                        <li className="nav-item"><Link style={{ color: '#D81B60', ...myStyle }} className="nav-link active" to='/Food'>Food & Recipes</Link></li>
-                        <li className="nav-item"><Link style={{ color: '#FB8C00', ...myStyle }} className="nav-link active" to='/Education'>Education & Learning</Link></li>
-                        <li className="nav-item"><Link style={{ color: '#5E35B1', ...myStyle }} className="nav-link active" to='/Entertainment'>Entertainment & Culture</Link></li>
-                        <li className="nav-item"><Link style={{ color: '#00897B', ...myStyle }} className="nav-link active" to='/Spiritual'>Spiritual</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Technology' ? 'active' : ''}`} style={{ color: '#1E88E5', ...myStyle }}  to='/Technology'>Technology</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Health' ? 'active' : ''}`} style={{ color: '#43A047', ...myStyle }}  to='/Health'>Health & Wellness</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Travel' ? 'active' : ''}`} style={{ color: '#F4511E', ...myStyle }}  to='/Travel'>Travel & Adventure</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Lifestyle' ? 'active' : ''}`} style={{ color: '#8E24AA', ...myStyle }}  to='/Lifestyle'>Lifestyle</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Finance' ? 'active' : ''}`} style={{ color: '#3949AB', ...myStyle }}  to='/Finance'>Finance & Business</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Food' ? 'active' : ''}`} style={{ color: '#D81B60', ...myStyle }}  to='/Food'>Food & Recipes</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Education' ? 'active' : ''}`} style={{ color: '#FB8C00', ...myStyle }}  to='/Education'>Education & Learning</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Entertainment' ? 'active' : ''}`} style={{ color: '#5E35B1', ...myStyle }}  to='/Entertainment'>Entertainment & Culture</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Spiritual' ? 'active' : ''}`} style={{ color: '#00897B', ...myStyle }}  to='/Spiritual'>Spiritual</Link></li>
                     </ul>
                 </div>
             </div>

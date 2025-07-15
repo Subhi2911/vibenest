@@ -2,11 +2,13 @@ import React, { useState } from 'react'
 import BlogContext from './blogContext';
 
 const BlogState = (props) => {
-    const host = 'http://localhost:5000';
+    const host = process.env.BACKEND_URL
 
-    const blogsInitial = []
+    const blogsInitial = [];
+    const initialNotify = [];
 
     const [blogs, setBlogs] = useState(blogsInitial)
+    const [notification, setNotification] = useState(initialNotify)
 
     //Fetch all blogs
     const getBlogs = async () => {
@@ -22,7 +24,7 @@ const BlogState = (props) => {
     };
 
     //Add a blog
-    const addBlog = async (title, content, imageurl, category) => {
+    const addBlog = async (title, content, imageurl,isprivate, category) => {
         //API call
         const response = await fetch(`${host}/api/blogs/createpvtblog`, {
             method: "POST",
@@ -30,7 +32,7 @@ const BlogState = (props) => {
                 "Content-Type": "application/json",
                 "auth-token": localStorage.getItem('token')
             },
-            body: JSON.stringify({ title, content, imageurl, category }),
+            body: JSON.stringify({ title, content, imageurl,isprivate, category }),
             // …
 
         });
@@ -102,7 +104,7 @@ const BlogState = (props) => {
         }
     };
     //Edit a blog
-    const editBlog = async (id, title, content, imageurl, category) => {
+    const editBlog = async (id, title, content, imageurl, isprivate, category) => {
         //API call
         const response = await fetch(`${host}/api/blogs/updateblog/${id}`, {
             method: "PUT",
@@ -110,7 +112,7 @@ const BlogState = (props) => {
                 "Content-Type": "application/json",
                 "auth-token": localStorage.getItem('token')
             },
-            body: JSON.stringify({ title, content, imageurl, category }),
+            body: JSON.stringify({ title, content, imageurl,isprivate, category }),
             // …
 
         });
@@ -125,6 +127,7 @@ const BlogState = (props) => {
                 newBlogs[index].title = title;
                 newBlogs[index].content = content;
                 newBlogs[index].imageurl = imageurl;
+                newBlogs[index].isprivate = isprivate;
                 newBlogs[index].category = category
                 break;
             }
@@ -146,16 +149,20 @@ const BlogState = (props) => {
     }
 
     const fetchNotifications = async () => {
-        const res = await fetch(`${host}/api/notifications`, {
-            headers: { 'auth-token': localStorage.getItem('token') }
+        const response = await fetch(`${host}/api/notifications/getnotifications`, {
+            method: "GET",
+            headers: {
+                'auth-token': localStorage.getItem('token')
+            }
         });
-        const data = await res.json();
-        return data;
+        const json = await response.json();
+        
+        setNotification(Array.isArray(json) ? json :  [json]);
     };
 
 
     return (
-        <BlogContext.Provider value={{ blogs, getBlogs, addBlog, deleteBlog, getBlogById, fetchAuthorBlogs, editBlog, fetchCatBlogs,fetchNotifications }}>
+        <BlogContext.Provider value={{ blogs, getBlogs, addBlog, deleteBlog, getBlogById, fetchAuthorBlogs, editBlog, fetchCatBlogs, fetchNotifications, notification }}>
             {props.children}
         </BlogContext.Provider>
     )

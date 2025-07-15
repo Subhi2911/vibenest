@@ -10,10 +10,11 @@ const MyBlogs = (props) => {
     const navigate = useNavigate();
     const context = useContext(BlogContext);
     const { blogs, fetchAuthorBlogs, editBlog } = context;
+    const host = process.env.BACKEND_URL
     const [loading, setLoading] = useState(true);
     // eslint-disable-next-line no-unused-vars
     const [username, setUsername] = useState(null);
-    const [blog, setBlog] = useState({ id: '', ecategory: '', etitle: '', econtent: '', eimageurl: '' });
+    const [blog, setBlog] = useState({ id: '', ecategory: '', etitle: '', econtent: '', eisprivate: false, eimageurl: '' });
     const [coverUrl, setCoverUrl] = useState('');
     const ref = useRef(null);
     const refClose = useRef(null);
@@ -36,7 +37,7 @@ const MyBlogs = (props) => {
 
         const fetchUsername = async () => {
             try {
-                const response = await fetch("http://localhost:5000/api/auth/getuser", {
+                const response = await fetch(`${host}/api/auth/getuser`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -68,9 +69,9 @@ const MyBlogs = (props) => {
             ecategory: currentBlog.category || 'General',
             econtent: currentBlog.content,
             eimageurl: currentBlog.imageurl,
+            eisprivate: currentBlog.isprivate
         });
-        console.log("Editing blog:", currentBlog);
-        console.log("Sending ID to editBlog:", currentBlog._id);
+        
         setCoverUrl(currentBlog.imageurl);
         setTimeout(() => {
             ref.current?.click();
@@ -86,7 +87,7 @@ const MyBlogs = (props) => {
     const handleClick = async (e) => {
         e.preventDefault();
         console.log("Sending ID to editBlog:", blog.id);
-        await editBlog(blog.id, blog.etitle, blog.econtent, blog.eimageurl, blog.ecategory);
+        await editBlog(blog.id, blog.etitle, blog.econtent, blog.eimageurl, blog.eisprivate, blog.ecategory);
 
         refClose.current.click();
         props?.showAlert?.("Blog Updated Successfully!!", "success");
@@ -108,7 +109,7 @@ const MyBlogs = (props) => {
         const formData = new FormData();
         formData.append('image', blog.eimageurl);
         try {
-            const response = await fetch('http://localhost:5000/upload-image', {
+            const response = await fetch(`${host}/upload-image`, {
                 method: 'POST',
                 body: formData,
             });
@@ -128,7 +129,7 @@ const MyBlogs = (props) => {
     };
 
     return (
-        <div style={{ display: 'flex-wrap',marginTop:'5rem'}}>
+        <div style={{ display: 'flex-wrap', marginTop: '1rem' }}>
             {/* Hidden trigger for modal */}
             <button
                 type="button"
@@ -154,6 +155,21 @@ const MyBlogs = (props) => {
                             ></button>
                         </div>
                         <div className="modal-body">
+                            <div className='mb-3 my-3'>
+                                <div className="form-check form-switch">
+                                    <input
+                                        className="form-check-input"
+                                        type="checkbox"
+                                        role="switch"
+                                        id="switchCheckDefault"
+                                        checked={blog.eisprivate}
+                                        onChange={(e) =>
+                                            setBlog({ ...blog, eisprivate: e.target.checked })
+                                        }
+                                    />
+                                    <label className="form-check-label" for="switchCheckDefault" Style={{ fontWeight: '500' }}>{`Change to ${blog.eisprivate ? "Public" : "Private"} Blog`}</label>
+                                </div>
+                            </div>
                             <div className="mb-3">
                                 <label className="form-label">Cover Image</label>
                                 <input type="file" className="form-control" onChange={handleCoverChange} />

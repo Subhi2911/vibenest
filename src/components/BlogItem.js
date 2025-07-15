@@ -9,7 +9,7 @@ export default function BlogItem({ blog, updateBlog }) {
     const { deleteBlog } = context
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
-    const host = 'http://localhost:5000';
+    const host = process.env.BACKEND_URL
     const token = localStorage.getItem('token');
 
     const formattedDate = new Date(blog.updatedAt).toLocaleDateString('en-IN', {
@@ -54,6 +54,7 @@ export default function BlogItem({ blog, updateBlog }) {
             fetchUser();
 
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     const isOwner = user?.username === blog.author?.username;

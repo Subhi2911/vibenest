@@ -12,7 +12,7 @@ const AboutAuthor = (props) => {
     const { username } = useParams();
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
-    const host = 'http://localhost:5000';
+    const host = process.env.BACKEND_URL;
     const [loading, setLoading] = useState(true);
 
     const fetchAnotherUser = async () => {
@@ -46,7 +46,7 @@ const AboutAuthor = (props) => {
             props.setprogress(70);
 
             // Fetch author's blogs
-            const blogs = await fetchAuthorBlogs(username);
+            await fetchAuthorBlogs(username);
 
             setLoading(false);
             props.setprogress(100);

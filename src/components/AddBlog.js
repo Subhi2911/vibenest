@@ -9,10 +9,12 @@ export default function AddBlog() {
     const { addBlog } = useContext(BlogContext);
     const [content, setContent] = useState('');
     const token = localStorage.getItem('token')
+    const host = process.env.BACKEND_URL
     const [blog, setBlog] = useState({
         imageurl: '',
         title: '',
         content: '',
+        isprivate: false,
         category: ''
     });
     const [coverFile, setCoverFile] = useState(null);
@@ -53,7 +55,7 @@ export default function AddBlog() {
         formData.append('image', coverFile);
 
         try {
-            const res = await fetch('http://localhost:5000/upload-image', {  // Your cloud upload backend route
+            const res = await fetch(`${host}/upload-image`, {  // Your cloud upload backend route
                 method: 'POST',
                 body: formData
             });
@@ -79,16 +81,30 @@ export default function AddBlog() {
             return;
         }
 
-        addBlog(blog.title, blog.content, blog.imageurl, blog.category);
+        addBlog(blog.title, blog.content, blog.imageurl, blog.isprivate, blog.category);
         navigate('/');
     };
 
     return (
         <div className="container my-4" style={{ marginTop: '5rem' }}>
             <h2>Create a Blog</h2>
-
+            <div className='mb-3 my-3'>
+                <div className="form-check form-switch">
+                    <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="switchCheckDefault"
+                        checked={blog.isprivate}
+                        onChange={(e) =>
+                            setBlog({ ...blog, isprivate: e.target.checked })
+                        }
+                    />
+                    <label className="form-check-label" for="switchCheckDefault" Style={{fontWeight:'500'}}>{`Change to ${blog.isprivate ?" Public Blog" :" Private Blog"}`}</label>
+                </div>
+            </div>
             <div className="mb-3">
-                <label htmlFor="cover" className="form-label">Cover Image</label>
+                <label htmlFor="cover" className="form-label"  Style={{fontWeight:'500'}}>Cover Image</label>
                 <input type="file" className="form-control" onChange={handleCoverChange} />
                 <button className="btn btn-secondary mt-2" onClick={uploadCover}>Upload Cover</button>
                 {coverUrl && (
@@ -99,7 +115,7 @@ export default function AddBlog() {
                 )}
             </div>
             <div className="mb-3">
-                <label className="form-label">Category</label>
+                <label className="form-label"  Style={{fontWeight:'500'}}>Category</label>
                 <select className="form-select" name="category" value={blog.category} onChange={handleChange} required>
                     <option value="">Select a category</option>
                     {categories.map((cat, index) => (
@@ -109,7 +125,7 @@ export default function AddBlog() {
             </div>
 
             <div className="mb-3">
-                <label htmlFor="title" className="form-label">Blog Title</label>
+                <label htmlFor="title" className="form-label"  Style={{fontWeight:'500'}}>Blog Title</label>
                 <input
                     type="text"
                     className="form-control"
@@ -124,7 +140,7 @@ export default function AddBlog() {
             </div>
 
             <div className="mb-3">
-                <label htmlFor="content" className="form-label">Content</label>
+                <label htmlFor="content" className="form-label"  Style={{fontWeight:'500'}}>Content</label>
                 <ReactQuill
                     theme="snow"
                     value={content}

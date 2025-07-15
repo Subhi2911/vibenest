@@ -14,17 +14,28 @@ import Search from './components/Search';
 import AboutAuthor from './components/AboutAuthor';
 import CategoryBlog from './components/CategoryBlog';
 import LoadingBar from "react-top-loading-bar";
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import BlogContext from './context/blogs/blogContext';
 
 
 function App() {
+    const context = useContext(BlogContext);
+    const { fetchNotifications } = context
+
+    useEffect(() => {
+        const load = async () => {
+            await fetchNotifications();
+        };
+        load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     const [progress, setProgress] = useState(0);
-    const [color, setColor]=useState('red')
+    const [color, setColor] = useState('red')
 
     const setprogress = (progress) => {
         setProgress(progress)
     }
-    const loaderColor=(color)=>{
+    const loaderColor = (color) => {
         setColor(color);
     }
 

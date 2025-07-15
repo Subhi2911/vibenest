@@ -1,18 +1,30 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import Avatar from './Avatar';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import CategoryNavbar from './CategoryNavbar';
 import VerticalThinNavbar from './VerticalThinNavbar';
+import NotificationBell from './NotificationBell';
+import BlogContext from '../context/blogs/blogContext';
 
 export default function Navbar() {
     const [user, setUser] = useState(null);
-    const host = 'http://localhost:5000';
+    const host = process.env.BACKEND_URL
     const navigate = useNavigate();
     const offcanvasLeftRef = useRef();
     const offcanvasRef = useRef();
     const token = localStorage.getItem('token');
     const location = useLocation();
     const bordercolor = location.pathname === '/profile' ? '#FFB433' : '';
+    const context = useContext(BlogContext);
+    const { fetchNotifications } = context
+
+    useEffect(() => {
+        const load = async () => {
+            await fetchNotifications();
+        };
+        load()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const closeOffcanvas = () => {
         const bsOffcanvas = window.bootstrap.Offcanvas.getInstance(offcanvasRef.current);
@@ -46,6 +58,7 @@ export default function Navbar() {
             }
         };
         if (token) fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     return (
@@ -56,7 +69,7 @@ export default function Navbar() {
 
                     {/* Left: Hamburger + Logo */}
                     <div className="d-flex align-items-center me-3" style={{ gap: '1rem' }}>
-                        <div type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style={{ position:'fixed',left:'1rem',cursor: 'pointer' }}>
+                        <div type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style={{ position: 'fixed', left: '1rem', cursor: 'pointer' }}>
                             <i className="fa-solid fa-bars fs-5"></i>
                         </div>
                         <h5 className="navbar-brand mb-0 mx-4">VibeNest</h5>
@@ -65,7 +78,7 @@ export default function Navbar() {
                     {/* Center: Search */}
                     <div className="flex-grow-1 d-none d-md-block mx-2">
                         <form className="d-flex" role="search">
-                            <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
+                            <input className="form-control me-2" type="search" placeholder="Search  (non-functional)" aria-label="Search" />
                             <button className="btn btn-outline-success" type="submit">Search</button>
                         </form>
                     </div>
@@ -74,27 +87,25 @@ export default function Navbar() {
                     <div className="d-flex align-items-center" style={{ gap: '0.6rem', minWidth: '160px' }}>
                         {/* Mobile search toggle */}
                         <button className="btn d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#searchCollapse" aria-expanded="false" aria-controls="searchCollapse">
-                            <i className="fa-solid fa-magnifying-glass"></i>
+                            <i className="fa-solid fa-magnifying-glass" style={{ fontSize: '1.1rem' }}></i>
                         </button>
 
                         {/* Create Blog */}
-                        <Link to="/addBlog" className="text-decoration-none text-dark d-flex align-items-center justify-content-center" style={{ fontSize: '1.2rem' }}>
+                        <Link to="/addBlog" className="text-decoration-none text-dark d-flex align-items-center justify-content-center" style={{ fontSize: '1.5rem' }}>
                             <i className="fa-solid fa-plus"></i>
                             <span className="d-none d-sm-inline ms-1" style={{ fontSize: '0.9rem' }}>Create</span>
                         </Link>
 
                         {/* Notifications */}
-                        <Link to="/notifications" className="text-dark d-flex justify-content-center align-items-center" style={{ fontSize: '1.2rem',textDecoration:'none' }}>
-                            <i className="fa-solid fa-bell"></i>
-                        </Link>
+                        <NotificationBell />
 
                         {/* Avatar / Signup */}
                         {user && token ? (
                             <div
                                 className="d-flex justify-content-center align-items-center rounded-circle"
                                 style={{
-                                    width: '2.3em',
-                                    height: '2.3em',
+                                    width: '2',
+                                    height: '2',
                                     border: bordercolor ? `2px solid ${bordercolor}` : 'none',
                                     cursor: 'pointer'
                                 }}
@@ -133,11 +144,17 @@ export default function Navbar() {
                         <li className="list-group-item border-top my-2"><i className="fa-solid fa-house mx-3"></i><Link onClick={closeOffcanvasleft} to="/" className="text-decoration-none text-dark">Home</Link></li>
                         <li className="list-group-item border-top my-2"><i className="fa-solid fa-file mx-3"></i><Link onClick={closeOffcanvasleft} to="/myblogs" className="text-decoration-none text-dark">My Blogs</Link></li>
                         <li className="list-group-item border-top my-2"><i className="fa-solid fa-user mx-3"></i><Link onClick={closeOffcanvasleft} to="/profile" className="text-decoration-none text-dark">You</Link></li>
-                        {(!token || token === undefined || token !== null) && (
+                        {(!token || token === undefined || token === null)? (
                             <li className="list-group-item border-top my-2">
                                 <i className="fa-solid fa-right-to-bracket mx-3"></i>
                                 <Link onClick={closeOffcanvasleft} to="/login" className="text-decoration-none text-dark">Login</Link>
                             </li>
+                        ):(
+                            <li className=" list-group-item border-top my-2">
+                                <i className="fa-solid fa-right-from-bracket mx-3" ></i>
+                                <button type='button' onClick={() => { handleLogout(); closeOffcanvasleft(); }} to="/login" className=" text-dark text-decoration-none" style={{border:'none',backgroundColor:'transparent',padding:'0'}}>Logout</button>
+                            </li>
+                            
                         )}
                     </ul>
 

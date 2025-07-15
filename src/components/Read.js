@@ -5,67 +5,70 @@ import Spinner from './Spinner';
 import Ratings from './Ratings';
 
 export default function Read(props) {
-    const { id } = useParams();
-    const { blogs, getBlogById } = useContext(BlogContext);
-    const [blog, setBlog] = useState(null);
-    const [loading, setLoading] = useState(true); // ✅ New loading state
-    const navigate = useNavigate();
-    const token = localStorage.getItem('token');
-    const host = 'http://localhost:5000';
+  const { id } = useParams();
+  const { blogs, getBlogById } = useContext(BlogContext);
+  const [blog, setBlog] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+  const host = 'http://localhost:5000';
 
-    useEffect(() => {
-        const fetchData = async () => {
-            props.setprogress(10);
+  useEffect(() => {
+    const fetchData = async () => {
+      props.setprogress(10);
 
-            if (!token || token === 'undefined' || token === 'null') {
-                props.setprogress(100);
-                navigate('/login');
-                return;
-            }
+      // Must check auth first
+      if (!token || token === 'undefined' || token === 'null') {
+        props.setprogress(100);
+        navigate('/login');
+        setLoading(false);
+        return;
+      }
 
-            props.setprogress(30);
-            let found = blogs.find((b) => b._id === id);
+      props.setprogress(30);
+      const found = blogs.find(b => b._id === id);
 
-            if (found) {
-                setBlog(found);
-                props.setprogress(100);
-                setLoading(false);
-            } else {
-                try {
-                    const fetched = await getBlogById(id);
-                    props.setprogress(70);
-                    if (fetched) {
-                        setBlog(fetched);
-                    }
-                    props.setprogress(100);
-                    setLoading(false);
-                } catch (error) {
-                    console.error('Error fetching blog:', error);
-                    props.setprogress(100);
-                    setLoading(false);
-                }
-            }
-        };
+      if (found) {
+        setBlog(found);
+        props.setprogress(100);
+        setLoading(false);
+      } else {
+        try {
+          props.setprogress(50);
+          const fetched = await getBlogById(id);
+          props.setprogress(80);
+          if (fetched) {
+            setBlog(fetched);
+          } else {
+            console.warn('Blog not found');
+          }
+        } catch (err) {
+          console.error('Fetching blog failed:', err);
+        } finally {
+          props.setprogress(100);
+          setLoading(false);
+        }
+      }
+    };
 
-        fetchData();
+    fetchData();
+    // Only re-run if id changes or blogs context changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [blogs, id, getBlogById, navigate]);
+  }, [id, blogs]);
 
-    if (loading || !blog) {
-        return (
-            <div className="d-flex justify-content-center my-5">
-                <Spinner />
-            </div>
-        );
-    }
+  if (loading) {
+    return <div className="d-flex justify-content-center my-5"><Spinner /></div>;
+  }
 
-    const formattedDate = new Date(blog.updatedAt).toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    });
+  if (!blog) {
+    return <p className="text-center my-5">Blog not found.</p>;
+  }
 
-    return (
+  const formattedDate = new Date(blog.updatedAt).toLocaleDateString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+
+  return (
         <div style={{ marginTop: '1rem' }}>
             <div className="container my-2">
                 <h2 className="d-flex justify-content-center my-3">{blog.title}</h2>

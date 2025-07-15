@@ -22,7 +22,7 @@ const BlogState = (props) => {
     };
 
     //Add a blog
-    const addBlog = async ( title, content, imageurl, category) => {
+    const addBlog = async (title, content, imageurl, category) => {
         //API call
         const response = await fetch(`${host}/api/blogs/createpvtblog`, {
             method: "POST",
@@ -51,7 +51,7 @@ const BlogState = (props) => {
             });
 
             const json = await response.json();
-            return json;  
+            return json;
         } catch (error) {
             console.error("Error fetching blog by ID:", error);
             return null;
@@ -102,7 +102,7 @@ const BlogState = (props) => {
         }
     };
     //Edit a blog
-    const editBlog = async (id,title, content, imageurl, category) => {
+    const editBlog = async (id, title, content, imageurl, category) => {
         //API call
         const response = await fetch(`${host}/api/blogs/updateblog/${id}`, {
             method: "PUT",
@@ -134,9 +134,9 @@ const BlogState = (props) => {
     }
 
     //Fetching categorised Blogs
-    const fetchCatBlogs= async(category)=>{
-        const response = await fetch(`${host}/api/blogs/categoryblog/${category}`,{
-            method:"GET",
+    const fetchCatBlogs = async (category) => {
+        const response = await fetch(`${host}/api/blogs/categoryblog/${category}`, {
+            method: "GET",
             headers: {
                 "Content-Type": "application/json"
             },
@@ -145,8 +145,17 @@ const BlogState = (props) => {
         setBlogs(Array.isArray(json) ? json : json.blogs || [])
     }
 
+    const fetchNotifications = async () => {
+        const res = await fetch(`${host}/api/notifications`, {
+            headers: { 'auth-token': localStorage.getItem('token') }
+        });
+        const data = await res.json();
+        return data;
+    };
+
+
     return (
-        <BlogContext.Provider value={{ blogs, getBlogs, addBlog, deleteBlog, getBlogById, fetchAuthorBlogs, editBlog ,fetchCatBlogs }}>
+        <BlogContext.Provider value={{ blogs, getBlogs, addBlog, deleteBlog, getBlogById, fetchAuthorBlogs, editBlog, fetchCatBlogs,fetchNotifications }}>
             {props.children}
         </BlogContext.Provider>
     )

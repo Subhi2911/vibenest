@@ -11,7 +11,7 @@ export default function Read(props) {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
-  const host = 'http://localhost:5000';
+  const host = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,7 +101,6 @@ export default function Read(props) {
                                 body: JSON.stringify({ rating: newRating }),
                             })
                                 .then(res => res.json())
-                                .then(data => console.log('Rating saved', data))
                                 .catch(console.error);
                         }}
                     />

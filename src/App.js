@@ -10,7 +10,6 @@ import Read from './components/Read';
 import Login from './components/Login';
 import Profile from './components/Profile';
 import MyBlogs from './components/MyBlogs';
-import Search from './components/Search';
 import AboutAuthor from './components/AboutAuthor';
 import CategoryBlog from './components/CategoryBlog';
 import LoadingBar from "react-top-loading-bar";
@@ -71,7 +70,6 @@ function App() {
                         <Route path='/login' element={<Login setprogress={setprogress} />} />
                         <Route path='/profile' element={<Profile setprogress={setprogress} />} />
                         <Route path='/myblogs' element={<MyBlogs setprogress={setprogress} />} />
-                        <Route path='/search' element={<Search setprogress={setprogress} />} />
                         <Route path='/aboutauthor/:username' element={<AboutAuthor setprogress={setprogress} />} />
                         {Object.entries(categories).map(([path, color]) => (
                             <Route

@@ -2,11 +2,14 @@ import React, { useEffect, useState, useContext } from 'react';
 import BlogContext from '../context/blogs/blogContext';
 import NotifyItem from './NotifyItem';
 import Spinner from './Spinner';
+import { useNavigate } from 'react-router-dom';
 
 const Notify = (props) => {
     const { fetchNotifications, notification } = useContext(BlogContext);
     const [loading, setLoading] = useState(true);
-
+    const navigate = useNavigate();
+    const token = localStorage.getItem('token');
+    const safeNotification = notification || [];
 
     useEffect(() => {
         const load = async () => {
@@ -18,6 +21,9 @@ const Notify = (props) => {
     }, [fetchNotifications]);
 
     useEffect(() => {
+        if(!token || token === null || token === undefined){
+            navigate('/login')
+        }
         props.setprogress(0);
         const load = async () => {
             props.setprogress(50);
@@ -39,7 +45,7 @@ const Notify = (props) => {
         <div style={{ marginTop: '1rem' }}>
             <div className="container my-3 text-center">
                 <h3>Notifications</h3>
-                {notification.length === 0 ? (
+                {safeNotification.length === 0 ? (
                     <p>No notifications yet.</p>
                 ) : (
                     <div className="d-flex flex-column align-items-center">

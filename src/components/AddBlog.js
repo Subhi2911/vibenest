@@ -3,13 +3,15 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import BlogContext from '../context/blogs/blogContext';
 import { useNavigate } from 'react-router-dom';
+import Spinner from './Spinner';
 
 export default function AddBlog() {
     const navigate = useNavigate();
     const { addBlog } = useContext(BlogContext);
     const [content, setContent] = useState('');
     const token = localStorage.getItem('token')
-    const host = process.env.BACKEND_URL
+    const host = process.env.REACT_APP_BACKEND_URL;
+    const [uploadimage, setUploadimage] = useState(false)
     const [blog, setBlog] = useState({
         imageurl: '',
         title: '',
@@ -21,16 +23,17 @@ export default function AddBlog() {
     const [coverUrl, setCoverUrl] = useState('');
     const categories = [
         'Technology',
-        'Health & Wellness',
-        'Travel & Adventure',
+        'Health',
+        'Travel',
         'Lifestyle',
-        'Finance & Business',
-        'Food & Recipes',
-        'Education & Learning',
-        'Entertainment & Culture',
+        'Finance',
+        'Food',
+        'Education',
+        'Entertainment',
         'Spiritual'
     ];
     useEffect(() => {
+        
         if (!token || token === undefined || token === null) {
             return navigate('/login')
         }
@@ -51,11 +54,12 @@ export default function AddBlog() {
             return;
         }
 
+        setUploadimage(true); 
         const formData = new FormData();
         formData.append('image', coverFile);
 
         try {
-            const res = await fetch(`${host}/upload-image`, {  // Your cloud upload backend route
+            const res = await fetch(`${host}/upload-image`, {
                 method: 'POST',
                 body: formData
             });
@@ -63,7 +67,6 @@ export default function AddBlog() {
             const data = await res.json();
 
             if (res.ok) {
-                // data.imageUrl is full Cloudinary URL
                 setCoverUrl(data.imageUrl);
                 setBlog({ ...blog, imageurl: data.imageUrl });
             } else {
@@ -71,8 +74,11 @@ export default function AddBlog() {
             }
         } catch (error) {
             alert('Upload error: ' + error.message);
+        } finally {
+            setUploadimage(false); 
         }
     };
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -100,22 +106,32 @@ export default function AddBlog() {
                             setBlog({ ...blog, isprivate: e.target.checked })
                         }
                     />
-                    <label className="form-check-label" for="switchCheckDefault" Style={{fontWeight:'500'}}>{`Change to ${blog.isprivate ?" Public Blog" :" Private Blog"}`}</label>
+                    <label className="form-check-label" for="switchCheckDefault" style={{ fontWeight: '500' }}>{`Change to ${blog.isprivate ? " Public Blog" : " Private Blog"}`}</label>
                 </div>
             </div>
             <div className="mb-3">
-                <label htmlFor="cover" className="form-label"  Style={{fontWeight:'500'}}>Cover Image</label>
+                <label htmlFor="cover" className="form-label" style={{ fontWeight: '500' }}>Cover Image</label>
                 <input type="file" className="form-control" onChange={handleCoverChange} />
-                <button className="btn btn-secondary mt-2" onClick={uploadCover}>Upload Cover</button>
-                {coverUrl && (
-                    <div className="mt-3">
-                        {/* Use the full URL directly, no localhost prefix */}
-                        <img src={coverUrl} alt="Cover" width="300" />
+                <button className="btn btn-secondary mt-2" disabled={uploadimage} onClick={uploadCover}>
+                    {uploadimage ? 'Uploading...' : 'Upload Cover'}
+                </button>
+
+                {uploadimage && (
+                    <div className="mt-2 mx-5">
+                        <Spinner />
                     </div>
                 )}
+
+                {!uploadimage && coverUrl && (
+                    <div className="mt-3">
+                        <img src={coverUrl} alt="Cover Preview" width="300" />
+                    </div>
+                )}
+
+
             </div>
             <div className="mb-3">
-                <label className="form-label"  Style={{fontWeight:'500'}}>Category</label>
+                <label className="form-label" style={{ fontWeight: '500' }}>Category</label>
                 <select className="form-select" name="category" value={blog.category} onChange={handleChange} required>
                     <option value="">Select a category</option>
                     {categories.map((cat, index) => (
@@ -125,7 +141,7 @@ export default function AddBlog() {
             </div>
 
             <div className="mb-3">
-                <label htmlFor="title" className="form-label"  Style={{fontWeight:'500'}}>Blog Title</label>
+                <label htmlFor="title" className="form-label" style={{ fontWeight: '500' }}>Blog Title</label>
                 <input
                     type="text"
                     className="form-control"
@@ -140,7 +156,7 @@ export default function AddBlog() {
             </div>
 
             <div className="mb-3">
-                <label htmlFor="content" className="form-label"  Style={{fontWeight:'500'}}>Content</label>
+                <label htmlFor="content" className="form-label" style={{ fontWeight: '500' }}>Content</label>
                 <ReactQuill
                     theme="snow"
                     value={content}

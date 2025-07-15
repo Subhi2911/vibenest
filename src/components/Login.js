@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 const Login = (props) => {
-    const host = process.env.BACKEND_URL
+    const host = process.env.REACT_APP_BACKEND_URL;
     const navigate = useNavigate()
     const [credentials, setCredentials] = useState({ email: '', password: '' });
 

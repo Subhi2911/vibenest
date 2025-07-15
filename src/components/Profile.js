@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Profile = (props) => {
     const [user, setUser] = useState(null);
-    const host = 'http://localhost:5000';
+    const host = process.env.REACT_APP_BACKEND_URL;
     const token = localStorage.getItem("token");
     const [bio, setBio] = useState('')
     const refClose = useRef(null);

@@ -4,16 +4,25 @@ import Spinner from './Spinner';
 import Avatar from './Avatar';
 import { useNavigate, useParams } from 'react-router-dom';
 import BlogItem from './BlogItem';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 const AboutAuthor = (props) => {
     const context = useContext(BlogContext);
-    const { blogs, fetchAuthorBlogs } = context;
+    const { fetchAuthorBlogs } = context;
     const [user, setUser] = useState(null);
+    const [blogs, setBlogs] = useState([]);
     const { username } = useParams();
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
-    const host = process.env.BACKEND_URL;
-    const [loading, setLoading] = useState(true);
+    const host = process.env.REACT_APP_BACKEND_URL;
+    const [loadingUser, setLoadingUser] = useState(true);
+    const [loadingBlogs, setLoadingBlogs] = useState(false);
+
+    // Pagination states
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    // eslint-disable-next-line no-unused-vars
+    const [totalBlogs, setTotalBlogs] = useState(0);
 
     const fetchAnotherUser = async () => {
         try {
@@ -31,6 +40,37 @@ const AboutAuthor = (props) => {
         }
     };
 
+    // Fetch blogs page by page
+    const fetchBlogsPage = async (pageToFetch = 1) => {
+        if (!username) return;
+
+        setLoadingBlogs(true);
+        try {
+            const data = await fetchAuthorBlogs(username, pageToFetch, 6); // adjust limit as needed
+            if (data) {
+                if (pageToFetch === 1) {
+                    setBlogs(data.blogs || []);
+                } else {
+                    setBlogs(prev => [...prev, ...(data.blogs || [])]);
+                }
+                setTotalBlogs(data.total || 0);
+
+                if ((blogs.length + (data.blogs?.length || 0)) >= data.total) {
+                    setHasMore(false);
+                } else {
+                    setHasMore(true);
+                }
+                setPage(pageToFetch + 1);
+            } else {
+                setHasMore(false);
+            }
+        } catch (error) {
+            console.error("Error fetching author's blogs:", error);
+            setHasMore(false);
+        }
+        setLoadingBlogs(false);
+    };
+
     useEffect(() => {
         const loadData = async () => {
             props.setprogress(10);
@@ -45,10 +85,9 @@ const AboutAuthor = (props) => {
             await fetchAnotherUser();
             props.setprogress(70);
 
-            // Fetch author's blogs
-            await fetchAuthorBlogs(username);
+            await fetchBlogsPage(1);
 
-            setLoading(false);
+            setLoadingUser(false);
             props.setprogress(100);
         };
 
@@ -56,7 +95,7 @@ const AboutAuthor = (props) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [username]);
 
-    if (!user || loading) {
+    if (!user || loadingUser) {
         return (
             <div className="container my-5 text-center">
                 <Spinner />
@@ -105,20 +144,32 @@ const AboutAuthor = (props) => {
                 </h2>
             </div>
 
-            {loading ? (
+            {loadingBlogs && blogs.length === 0 ? (
                 <div className="d-flex justify-content-center my-5">
                     <Spinner />
                 </div>
             ) : (
-                <div className="container my-3">
-                    <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
-                        {Array.isArray(blogs) && [...blogs].reverse().map(blog => (
-                            <div key={blog._id} className="col d-flex justify-content-center">
-                                <BlogItem blog={blog} />
-                            </div>
-                        ))}
+                <InfiniteScroll
+                    dataLength={blogs.length}
+                    next={() => fetchBlogsPage(page)}
+                    hasMore={hasMore}
+                    loader={<div className="d-flex justify-content-center my-3"><Spinner /></div>}
+                    endMessage={<p className="text-center mt-4"><b>You've reached the end!</b></p>}
+                >
+                    <div className="container my-3">
+                        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
+                            {Array.isArray(blogs) && blogs.length > 0 ? (
+                                [...blogs].reverse().map(blog => (
+                                    <div key={blog._id} className="col d-flex justify-content-center">
+                                        <BlogItem blog={blog} />
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-center">No blogs found for this author.</p>
+                            )}
+                        </div>
                     </div>
-                </div>
+                </InfiniteScroll>
             )}
         </>
     );

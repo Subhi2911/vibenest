@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate} from 'react-router-dom';
 import moment from 'moment';
-const host = process.env.BACKEND_URL
+const host = process.env.REACT_APP_BACKEND_URL;
 
 const NotifyItem = ({ notification }) => {
     const token= localStorage.getItem('token')
@@ -27,7 +27,7 @@ const NotifyItem = ({ notification }) => {
             },
           });
           setWasRead(true);
-          console.log(wasRead)
+          
         } catch (err) {
           console.error('Error marking as read:', err);
         }

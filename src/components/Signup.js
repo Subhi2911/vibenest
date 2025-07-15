@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 
 const Signup = (props) => {
-    const host = 'http://localhost:5000';
+    const host = process.env.REACT_APP_BACKEND_URL;
 
     let navigate = useNavigate(); 
     const [credentials, setCredentials] = useState({ username: '', email: '', password: '', cpassword: '' })
@@ -46,8 +46,9 @@ const Signup = (props) => {
 
                 navigate("/");
                 props.setprogress(100);
-                props.showAlert("Account Created Successfully!", "success");
+                //props.showAlert("Account Created Successfully!", "success");
             } else {
+                console.error(json.error)
                 //props.showAlert(json.error || "Signup failed", "danger");
             }
         } catch (err) {

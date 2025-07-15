@@ -5,37 +5,39 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Link, useNavigate } from 'react-router-dom';
 import Spinner from './Spinner';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 const MyBlogs = (props) => {
     const navigate = useNavigate();
     const context = useContext(BlogContext);
-    const { blogs, fetchAuthorBlogs, editBlog } = context;
-    const host = process.env.BACKEND_URL
+    const { fetchAuthorBlogs, editBlog } = context;
+    const host = process.env.REACT_APP_BACKEND_URL;
+
     const [loading, setLoading] = useState(true);
-    // eslint-disable-next-line no-unused-vars
     const [username, setUsername] = useState(null);
+
+    // Pagination & blogs state
+    const [blogs, setBlogs] = useState([]);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [totalBlogs, setTotalBlogs] = useState(0);
     const [blog, setBlog] = useState({ id: '', ecategory: '', etitle: '', econtent: '', eisprivate: false, eimageurl: '' });
     const [coverUrl, setCoverUrl] = useState('');
     const ref = useRef(null);
     const refClose = useRef(null);
+    const [uploadimage, setUploadimage]=useState(false);
+
     const categories = [
-        'General',
-        'Technology',
-        'Health',
-        'Travel',
-        'Lifestyle',
-        'Finance',
-        'Food',
-        'Education',
-        'Entertainment',
-        'Spiritual'
+        'General', 'Technology', 'Health', 'Travel', 'Lifestyle',
+        'Finance', 'Food', 'Education', 'Entertainment', 'Spiritual'
     ];
 
     useEffect(() => {
         const userToken = localStorage.getItem('token');
-        if (!userToken) navigate('/login');
+        if (!userToken) return navigate('/login');
 
-        const fetchUsername = async () => {
+        const fetchUsernameAndBlogs = async () => {
+            props.setprogress(10);
             try {
                 const response = await fetch(`${host}/api/auth/getuser`, {
                     method: "POST",
@@ -44,25 +46,53 @@ const MyBlogs = (props) => {
                         "auth-token": userToken,
                     },
                 });
-
+                props.setprogress(50);
                 const json = await response.json();
-
+                props.setprogress(70);
                 if (json?.username) {
                     setUsername(json.username);
-                    fetchAuthorBlogs(json.username);
+
+                    // Fetch first page of blogs
+                    const data = await fetchAuthorBlogs(json.username, 1, 6);
+                    if (data) {
+                        setBlogs(data.blogs || []);
+                        setTotalBlogs(data.total || 0);
+                        setPage(2);
+                        if ((data.blogs?.length || 0) >= (data.total || 0)) {
+                            setHasMore(false);
+                        }
+                    } else {
+                        setHasMore(false);
+                    }
                 }
             } catch (error) {
-                console.error("Failed to fetch user:", error);
+                console.error("Failed to fetch user or blogs:", error);
             }
+            props.setprogress(100);
+            setLoading(false);
         };
 
-        fetchUsername();
-        setLoading(false)
+        fetchUsernameAndBlogs();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [fetchAuthorBlogs]);
+    }, []);
+
+    const fetchMoreData = async () => {
+        if (!username) return;
+
+        const data = await fetchAuthorBlogs(username, page, 6);
+        if (data && data.blogs && data.blogs.length > 0) {
+            setBlogs(prev => [...prev, ...data.blogs]);
+            setPage(prev => prev + 1);
+
+            if (blogs.length + data.blogs.length >= totalBlogs) {
+                setHasMore(false);
+            }
+        } else {
+            setHasMore(false);
+        }
+    };
 
     const updateBlog = (currentBlog) => {
-        ref.current.click();
         setBlog({
             id: currentBlog._id,
             etitle: currentBlog.title,
@@ -71,25 +101,14 @@ const MyBlogs = (props) => {
             eimageurl: currentBlog.imageurl,
             eisprivate: currentBlog.isprivate
         });
-        
         setCoverUrl(currentBlog.imageurl);
-        setTimeout(() => {
-            ref.current?.click();
-        }, 100);
+        ref.current?.click();
     };
-
-    useEffect(() => {
-        if (blog.id) {
-            ref.current?.click();
-        }
-    }, [blog.id]);
 
     const handleClick = async (e) => {
         e.preventDefault();
-        console.log("Sending ID to editBlog:", blog.id);
         await editBlog(blog.id, blog.etitle, blog.econtent, blog.eimageurl, blog.eisprivate, blog.ecategory);
-
-        refClose.current.click();
+        refClose.current?.click();
         props?.showAlert?.("Blog Updated Successfully!!", "success");
     };
 
@@ -102,35 +121,38 @@ const MyBlogs = (props) => {
         if (file) {
             setBlog({ ...blog, eimageurl: file });
         }
-
     };
 
     const uploadCover = async () => {
+        if (!(blog.eimageurl instanceof File)) {
+            props?.showAlert?.("Please select an image to upload.", "warning");
+            return;
+        }
+        setUploadimage(true);
         const formData = new FormData();
         formData.append('image', blog.eimageurl);
+
         try {
             const response = await fetch(`${host}/upload-image`, {
                 method: 'POST',
                 body: formData,
+                headers: {
+                    "auth-token": localStorage.getItem('token'),
+                },
             });
             const data = await response.json();
-            setCoverUrl(data.imageUrl);
-            setBlog({ ...blog, eimageurl: data.imageUrl });
+            setCoverUrl(data.url || data.imageUrl);
+            setBlog({ ...blog, eimageurl: data.url || data.imageUrl });
         } catch (error) {
             console.error('Upload error:', error);
+        } finally {
+            setUploadimage(false); 
         }
     };
 
-    const modalStyle = {
-        marginTop: '20px',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: '10px',
-    };
-
     return (
-        <div style={{ display: 'flex-wrap', marginTop: '1rem' }}>
-            {/* Hidden trigger for modal */}
+        <div style={{ flexWrap: 'wrap', marginTop: '1rem' }}>
+            {/* Hidden Modal Trigger */}
             <button
                 type="button"
                 ref={ref}
@@ -141,49 +163,51 @@ const MyBlogs = (props) => {
                 Open Modal
             </button>
 
-            {/* Modal */}
+            {/* Edit Modal */}
             <div className="modal fade" id="exampleModal" tabIndex="-1" aria-hidden="true">
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title">Edit Blog</h5>
-                            <button
-                                type="button"
-                                className="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                            ></button>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
                         </div>
                         <div className="modal-body">
-                            <div className='mb-3 my-3'>
-                                <div className="form-check form-switch">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        role="switch"
-                                        id="switchCheckDefault"
-                                        checked={blog.eisprivate}
-                                        onChange={(e) =>
-                                            setBlog({ ...blog, eisprivate: e.target.checked })
-                                        }
-                                    />
-                                    <label className="form-check-label" for="switchCheckDefault" Style={{ fontWeight: '500' }}>{`Change to ${blog.eisprivate ? "Public" : "Private"} Blog`}</label>
-                                </div>
+                            <div className="form-check form-switch mb-3">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    role="switch"
+                                    id="switchCheckDefault"
+                                    checked={blog.eisprivate}
+                                    onChange={(e) => setBlog({ ...blog, eisprivate: e.target.checked })}
+                                />
+                                <label className="form-check-label" htmlFor="switchCheckDefault" style={{ fontWeight: '500' }}>
+                                    {`Change to ${blog.eisprivate ? "Public" : "Private"} Blog`}
+                                </label>
                             </div>
+
                             <div className="mb-3">
-                                <label className="form-label">Cover Image</label>
+                                <label className="form-label" style={{ fontWeight: '500' }}>Cover Image</label>
                                 <input type="file" className="form-control" onChange={handleCoverChange} />
-                                <button className="btn btn-secondary mt-2" onClick={uploadCover}>
-                                    Upload Cover
+                                <button className="btn btn-secondary mt-2" disabled={uploadimage} onClick={uploadCover}>
+                                    {uploadimage ? 'Uploading...' : 'Upload Cover'}
                                 </button>
-                                {coverUrl && (
+
+                                {uploadimage && (
+                                    <div className="mt-2 mx-5">
+                                        <Spinner />
+                                    </div>
+                                )}
+
+                                {!uploadimage && coverUrl && (
                                     <div className="mt-3">
-                                        <img src={coverUrl} alt="Cover" width="300" />
+                                        <img src={coverUrl} alt="Cover Preview" width="300" />
                                     </div>
                                 )}
                             </div>
+
                             <div className="mb-3">
-                                <label className="form-label">Category</label>
+                                <label className="form-label" style={{ fontWeight: '500' }}>Category</label>
                                 <select
                                     className="form-select"
                                     name="ecategory"
@@ -192,7 +216,7 @@ const MyBlogs = (props) => {
                                     required
                                     style={{ background: 'white' }}
                                 >
-                                    <option value="">Select a category</option>
+                                    <option value="" style={{ fontWeight: '500' }}>Select a category</option>
                                     {categories.map((cat, index) => (
                                         <option value={cat} key={index}>{cat}</option>
                                     ))}
@@ -200,7 +224,7 @@ const MyBlogs = (props) => {
                             </div>
 
                             <div className="mb-3">
-                                <label className="form-label">Blog Title</label>
+                                <label className="form-label" style={{ fontWeight: '500' }}>Blog Title</label>
                                 <input
                                     type="text"
                                     className="form-control"
@@ -212,7 +236,7 @@ const MyBlogs = (props) => {
                             </div>
 
                             <div className="mb-3">
-                                <label className="form-label">Content</label>
+                                <label className="form-label" style={{ fontWeight: '500' }}>Content</label>
                                 <ReactQuill
                                     theme="snow"
                                     value={blog.econtent}
@@ -220,10 +244,8 @@ const MyBlogs = (props) => {
                                 />
                             </div>
                         </div>
-                        <div className="modal-footer" style={modalStyle}>
-                            <button ref={refClose} type="button" className="btn btn-secondary" data-bs-dismiss="modal">
-                                Close
-                            </button>
+                        <div className="modal-footer d-flex justify-content-end gap-2 mt-2">
+                            <button ref={refClose} type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             <button
                                 type="button"
                                 className="btn btn-primary"
@@ -237,34 +259,39 @@ const MyBlogs = (props) => {
                 </div>
             </div>
 
-            {/* Blog list */}
-            <div className=' container my-3 text-center'>
-                <h2>VibeNest-Your Blogs </h2>
+            {/* Blog List */}
+            <div className='container my-3 text-center'>
+                <h2>VibeNest - Your Blogs</h2>
             </div>
+
             {loading ? (
-                <div className="d-flex justify-content-center my-5">
-                    <Spinner />
-                </div>
+                <div className="d-flex justify-content-center my-5"><Spinner /></div>
             ) : (
-                <div className='container my-3'>
-                    <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
-                        {Array.isArray(blogs) && blogs.length > 0 ? (
-                            blogs.map((blog) => (
-                                <div key={blog._id} className="col d-flex justify-content-center">
-                                    <BlogItem blog={blog} updateBlog={updateBlog} />
+                <InfiniteScroll
+                    dataLength={blogs.length}
+                    next={fetchMoreData}
+                    hasMore={hasMore}
+                    loader={<div className="d-flex justify-content-center my-3"><Spinner /></div>}
+                    endMessage={<p className="text-center mt-4"><b>You've reached the end!</b></p>}
+                >
+                    <div className='container my-3'>
+                        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
+                            {Array.isArray(blogs) && blogs.length > 0 ? (
+                                [...blogs].reverse().map((blog) => (
+                                    <div key={blog._id} className="col d-flex justify-content-center">
+                                        <BlogItem blog={blog} updateBlog={updateBlog} />
+                                    </div>
+                                ))
+                            ) : (
+                                <div className='text-center'>
+                                    <p>No blogs found.</p>
+                                    <p className='my-2'>Start by creating one...</p>
+                                    <Link className='btn btn-outline-primary mx-2' to='/addblog'>Create Blog</Link>
                                 </div>
-                            ))
-                        ) : (
-                            <div className='text-center'>
-                                <p >No blogs found.</p>
-                                <div >
-                                    <p className='my-2'>Start by creating one..</p>
-                                    <Link className=' mx-4 btn btn-outline-primary' to='/addblog' type='button'>Create Blog</Link>
-                                </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
-                </div>
+                </InfiniteScroll>
             )}
         </div>
     );

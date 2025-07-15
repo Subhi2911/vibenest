@@ -9,7 +9,7 @@ export default function BlogItem({ blog, updateBlog }) {
     const { deleteBlog } = context
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
-    const host = process.env.BACKEND_URL
+    const host = process.env.REACT_APP_BACKEND_URL;
     const token = localStorage.getItem('token');
 
     const formattedDate = new Date(blog.updatedAt).toLocaleDateString('en-IN', {

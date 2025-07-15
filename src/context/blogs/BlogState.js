@@ -2,8 +2,7 @@ import React, { useState } from 'react'
 import BlogContext from './blogContext';
 
 const BlogState = (props) => {
-    const host = process.env.BACKEND_URL
-
+    const host = process.env.REACT_APP_BACKEND_URL;
     const blogsInitial = [];
     const initialNotify = [];
 
@@ -11,20 +10,29 @@ const BlogState = (props) => {
     const [notification, setNotification] = useState(initialNotify)
 
     //Fetch all blogs
-    const getBlogs = async () => {
-        //API call
-        const response = await fetch(`${host}/api/blogs/fetchblogs`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            },
-        });
-        const json = await response.json();
-        setBlogs(Array.isArray(json) ? json : json.blogs || [])
+    const getBlogs = async (page = 1, limit = 6) => {
+        try {
+            const response = await fetch(`${host}/api/blogs/fetchblogs?page=${page}&limit=${limit}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+            });
+
+            const json = await response.json();
+            return {
+                blogs: Array.isArray(json.blogs) ? json.blogs : [],
+                total: json.total || 0,
+            };
+        } catch (error) {
+            console.error("Error fetching blogs:", error);
+            return { blogs: [], total: 0 };
+        }
     };
 
+
     //Add a blog
-    const addBlog = async (title, content, imageurl,isprivate, category) => {
+    const addBlog = async (title, content, imageurl, isprivate, category) => {
         //API call
         const response = await fetch(`${host}/api/blogs/createpvtblog`, {
             method: "POST",
@@ -32,7 +40,7 @@ const BlogState = (props) => {
                 "Content-Type": "application/json",
                 "auth-token": localStorage.getItem('token')
             },
-            body: JSON.stringify({ title, content, imageurl,isprivate, category }),
+            body: JSON.stringify({ title, content, imageurl, isprivate, category }),
             // …
 
         });
@@ -78,31 +86,33 @@ const BlogState = (props) => {
     }
 
     // Fetch blogs by author's username
-    const fetchAuthorBlogs = async (username) => {
-        if (!username) {
-            console.warn("fetchAuthorBlogs called with null or undefined username");
-            return;
-        }
+    const fetchAuthorBlogs = async (username, page = 1, limit = 6) => {
+        if (!username) return { blogs: [], total: 0 };
 
         try {
-            const response = await fetch(`${host}/api/blogs/authorblog/username/${username}`, {
+            const response = await fetch(`${host}/api/blogs/authorblog/username/${username}/?page=${page}&limit=${limit}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
+                    "auth-token": localStorage.getItem('token')
                 },
             });
 
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`Error: ${response.status}`);
 
             const json = await response.json();
-            setBlogs(Array.isArray(json) ? json : json.blogs || []);
+            
+            return {
+                blogs: Array.isArray(json.blogs) ? json.blogs : [],
+                total: json.total || 0,
+            };
         } catch (error) {
             console.error("Failed to fetch author blogs:", error);
-            setBlogs([]);
+            return { blogs: [], total: 0 };
         }
     };
+
+
     //Edit a blog
     const editBlog = async (id, title, content, imageurl, isprivate, category) => {
         //API call
@@ -112,7 +122,7 @@ const BlogState = (props) => {
                 "Content-Type": "application/json",
                 "auth-token": localStorage.getItem('token')
             },
-            body: JSON.stringify({ title, content, imageurl,isprivate, category }),
+            body: JSON.stringify({ title, content, imageurl, isprivate, category }),
             // …
 
         });
@@ -136,29 +146,55 @@ const BlogState = (props) => {
         setBlogs(newBlogs);
     }
 
-    //Fetching categorised Blogs
-    const fetchCatBlogs = async (category) => {
-        const response = await fetch(`${host}/api/blogs/categoryblog/${category}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            },
-        });
-        const json = await response.json();
-        setBlogs(Array.isArray(json) ? json : json.blogs || [])
+    //Fetching categorised Blogs with pagination support
+    const fetchCatBlogs = async (category, page = 1, limit = 6) => {
+        try {
+            const response = await fetch(`${host}/api/blogs/categoryblog/${category}?page=${page}&limit=${limit}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+            });
+            if (!response.ok) throw new Error(`Error: ${response.status}`);
+
+            const json = await response.json();
+            // Assuming your backend returns { blogs: [...], total: number }
+            return {
+                blogs: Array.isArray(json.blogs) ? json.blogs : [],
+                total: json.total || 0,
+            };
+        } catch (error) {
+            console.error("Error fetching category blogs:", error);
+            return { blogs: [], total: 0 };
+        }
     }
 
+    //Fetching notifications
+
     const fetchNotifications = async () => {
-        const response = await fetch(`${host}/api/notifications/getnotifications`, {
-            method: "GET",
-            headers: {
-                'auth-token': localStorage.getItem('token')
+        const token = localStorage.getItem('token');
+        if (!token) return; // don't proceed if no token
+
+        try {
+            const response = await fetch(`${host}/api/notifications/getnotifications`, {
+                method: 'GET',
+                headers: {
+                    'auth-token': token,
+                },
+            });
+
+            if (response.status === 401) {
+                console.warn("Unauthorized: Invalid or expired token");
+                return;
             }
-        });
-        const json = await response.json();
-        
-        setNotification(Array.isArray(json) ? json :  [json]);
+
+            const data = await response.json();
+            setNotification(data.notifications);
+        } catch (err) {
+            console.error("Error fetching notifications:", err);
+        }
     };
+
 
 
     return (

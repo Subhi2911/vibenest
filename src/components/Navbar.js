@@ -8,7 +8,7 @@ import BlogContext from '../context/blogs/blogContext';
 
 export default function Navbar() {
     const [user, setUser] = useState(null);
-    const host = process.env.BACKEND_URL
+    const host = process.env.REACT_APP_BACKEND_URL;
     const navigate = useNavigate();
     const offcanvasLeftRef = useRef();
     const offcanvasRef = useRef();
@@ -20,11 +20,13 @@ export default function Navbar() {
 
     useEffect(() => {
         const load = async () => {
-            await fetchNotifications();
+            if (token) {
+                await fetchNotifications();
+            }
         };
-        load()
+        load();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [token]);
 
     const closeOffcanvas = () => {
         const bsOffcanvas = window.bootstrap.Offcanvas.getInstance(offcanvasRef.current);
@@ -58,7 +60,7 @@ export default function Navbar() {
             }
         };
         if (token) fetchUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     return (
@@ -144,17 +146,17 @@ export default function Navbar() {
                         <li className="list-group-item border-top my-2"><i className="fa-solid fa-house mx-3"></i><Link onClick={closeOffcanvasleft} to="/" className="text-decoration-none text-dark">Home</Link></li>
                         <li className="list-group-item border-top my-2"><i className="fa-solid fa-file mx-3"></i><Link onClick={closeOffcanvasleft} to="/myblogs" className="text-decoration-none text-dark">My Blogs</Link></li>
                         <li className="list-group-item border-top my-2"><i className="fa-solid fa-user mx-3"></i><Link onClick={closeOffcanvasleft} to="/profile" className="text-decoration-none text-dark">You</Link></li>
-                        {(!token || token === undefined || token === null)? (
+                        {(!token || token === undefined || token === null) ? (
                             <li className="list-group-item border-top my-2">
                                 <i className="fa-solid fa-right-to-bracket mx-3"></i>
                                 <Link onClick={closeOffcanvasleft} to="/login" className="text-decoration-none text-dark">Login</Link>
                             </li>
-                        ):(
+                        ) : (
                             <li className=" list-group-item border-top my-2">
                                 <i className="fa-solid fa-right-from-bracket mx-3" ></i>
-                                <button type='button' onClick={() => { handleLogout(); closeOffcanvasleft(); }} to="/login" className=" text-dark text-decoration-none" style={{border:'none',backgroundColor:'transparent',padding:'0'}}>Logout</button>
+                                <button type='button' onClick={() => { handleLogout(); closeOffcanvasleft(); }} to="/login" className=" text-dark text-decoration-none" style={{ border: 'none', backgroundColor: 'transparent', padding: '0' }}>Logout</button>
                             </li>
-                            
+
                         )}
                     </ul>
 

@@ -64,7 +64,7 @@ function App() {
     };
     return (
         <div >
-            <BrowserRouter basename='/vibenest'>
+            <BrowserRouter >
                 <BlogState>
                     <Navbar />
                     <Alert alert={alert}/> 

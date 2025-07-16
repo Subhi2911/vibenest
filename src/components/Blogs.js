@@ -21,7 +21,7 @@ export default function Blogs(props) {
                 setBlogs(data.blogs);
                 setTotalBlogs(data.total);
                 setPage(2);
-                props.setprogress(70);
+                props.setprogress(100);
                 if (data.blogs.length >= data.total) {
                     setHasMore(false);
                     props.setprogress(100);

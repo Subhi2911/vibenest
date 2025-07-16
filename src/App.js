@@ -64,7 +64,7 @@ function App() {
     };
     return (
         <div >
-            <BrowserRouter >
+            <BrowserRouter basename='/'>
                 <BlogState>
                     <Navbar />
                     <Alert alert={alert}/> 

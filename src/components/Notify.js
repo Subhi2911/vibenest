@@ -45,7 +45,7 @@ const Notify = (props) => {
                     <p>No notifications yet.</p>
                 ) : (
                     <div className="d-flex flex-column align-items-center">
-                        {notification.map((n) => (
+                        {notification.reverse().map((n) => (
                             <NotifyItem key={n._id || n.id} notification={n} />
                         ))}
                     </div>

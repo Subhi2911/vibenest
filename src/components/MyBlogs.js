@@ -9,26 +9,23 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 
 const MyBlogs = (props) => {
     const navigate = useNavigate();
-    const context = useContext(BlogContext);
-    const { fetchAuthorBlogs, editBlog } = context;
+    const { blogs, fetchAuthorBlogs, editBlog } = useContext(BlogContext);
     const host = process.env.REACT_APP_BACKEND_URL;
 
     const [loading, setLoading] = useState(true);
     const [username, setUsername] = useState(null);
-
-    // Pagination & blogs state
-    const [blogs, setBlogs] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const [totalBlogs, setTotalBlogs] = useState(0);
+
     const [blog, setBlog] = useState({ id: '', ecategory: '', etitle: '', econtent: '', eisprivate: false, eimageurl: '' });
     const [coverUrl, setCoverUrl] = useState('');
+    const [uploadimage, setUploadimage] = useState(false);
+
     const ref = useRef(null);
     const refClose = useRef(null);
-    const [uploadimage, setUploadimage]=useState(false);
 
     const categories = [
-        'General', 'Technology', 'Health', 'Travel', 'Lifestyle','Love',
+        'General', 'Technology', 'Health', 'Travel', 'Lifestyle', 'Love',
         'Finance', 'Food', 'Education', 'Entertainment', 'Spiritual'
     ];
 
@@ -36,7 +33,7 @@ const MyBlogs = (props) => {
         const userToken = localStorage.getItem('token');
         if (!userToken) return navigate('/login');
 
-        const fetchUsernameAndBlogs = async () => {
+        const fetchUserAndBlogs = async () => {
             props.setprogress(10);
             try {
                 const response = await fetch(`${host}/api/auth/getuser`, {
@@ -52,18 +49,10 @@ const MyBlogs = (props) => {
                 if (json?.username) {
                     setUsername(json.username);
 
-                    // Fetch first page of blogs
+                    // Fetch first page of blogs; this updates context blogs
                     const data = await fetchAuthorBlogs(json.username, 1, 6);
-                    if (data) {
-                        setBlogs(data.blogs || []);
-                        setTotalBlogs(data.total || 0);
-                        setPage(2);
-                        if ((data.blogs?.length || 0) >= (data.total || 0)) {
-                            setHasMore(false);
-                        }
-                    } else {
-                        setHasMore(false);
-                    }
+                    setPage(2);
+                    setHasMore(data.blogs.length < data.total);
                 }
             } catch (error) {
                 console.error("Failed to fetch user or blogs:", error);
@@ -72,7 +61,7 @@ const MyBlogs = (props) => {
             setLoading(false);
         };
 
-        fetchUsernameAndBlogs();
+        fetchUserAndBlogs();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -80,14 +69,8 @@ const MyBlogs = (props) => {
         if (!username) return;
 
         const data = await fetchAuthorBlogs(username, page, 6);
-        if (data && data.blogs && data.blogs.length > 0) {
-            setBlogs(prev => [...prev, ...data.blogs]);
-            setPage(prev => prev + 1);
-
-            if (blogs.length + data.blogs.length >= totalBlogs) {
-                setHasMore(false);
-            }
-        } else {
+        setPage(prev => prev + 1);
+        if (blogs.length >= data.total) {
             setHasMore(false);
         }
     };
@@ -146,7 +129,7 @@ const MyBlogs = (props) => {
         } catch (error) {
             console.error('Upload error:', error);
         } finally {
-            setUploadimage(false); 
+            setUploadimage(false);
         }
     };
 
@@ -276,8 +259,8 @@ const MyBlogs = (props) => {
                 >
                     <div className='container my-3'>
                         <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
-                            {Array.isArray(blogs) && blogs.length > 0 ? (
-                                [...blogs].map((blog) => (
+                            {blogs.length > 0 ? (
+                                blogs.map((blog) => (
                                     <div key={blog._id} className="col d-flex justify-content-center">
                                         <BlogItem blog={blog} updateBlog={updateBlog} />
                                     </div>

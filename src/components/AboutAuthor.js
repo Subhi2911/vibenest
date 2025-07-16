@@ -112,21 +112,19 @@ const AboutAuthor = (props) => {
     return (
         <>
             <div className="container" style={{ marginTop: '1rem' }}>
-                <div className="d-flex mx-3 my-4 justify-content-center">
-                    <div className="d-flex align-items-stretch">
-                        <div
-                            className="profile-image d-flex justify-content-center align-items-center"
-                            style={{
-                                width: '11.5rem',
-                                height: '11.5rem',
-                                backgroundColor: 'black',
-                                borderRadius: '50%',
-                            }}
-                        >
-                            <Avatar name={user.username} size={40} />
-                        </div>
+                <div className="d-flex flex-column flex-lg-row mx-3 my-4 justify-content-center align-items-center">
+                    <div
+                        className="profile-image d-flex justify-content-center align-items-center"
+                        style={{
+                            width: '11.5rem',
+                            height: '11.5rem',
+                            backgroundColor: 'black',
+                            borderRadius: '50%',
+                        }}
+                    >
+                        <Avatar name={user.username} size={40} />
                     </div>
-                    <div className="d-flex flex-column mb-3 align-items-stretch mx-4">
+                    <div className="d-flex flex-column mb-3 mx-lg-4 mt-3 mt-lg-0 justify-content-center">
                         <h4 className="my-3">Author Details</h4>
                         <p><b>Author's Name:</b> {user.username}</p>
                         <p><b>Bio:</b> {user.bio}</p>

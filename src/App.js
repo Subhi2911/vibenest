@@ -43,7 +43,6 @@ function App() {
     const [color, setColor] = useState('red')
 
     const setprogress = (progress) => {
-        console.log(progress)
         setProgress(progress)
     }
     const loaderColor = (color) => {

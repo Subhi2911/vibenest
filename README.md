@@ -95,24 +95,3 @@ Feel free to open issues or submit pull requests for improvements and bug fixes.
 MIT License
 
 ### Let me know if you want a README tailored for specific details or additional sections!
-
-## Screenshots of the interface
-
-
-
-
-
-
-
-
-
-
-Ask ChatGPT
-
-
-
-Tools
-
-
-
-ChatG

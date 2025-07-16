@@ -4,20 +4,19 @@ import DOMPurify from 'dompurify';
 import BlogContext from '../context/blogs/blogContext';
 
 export default function BlogItem({ blog, updateBlog }) {
-
-    const context = useContext(BlogContext)
-    const { deleteBlog } = context
+    const context = useContext(BlogContext);
+    const { deleteBlog } = context;
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const host = process.env.REACT_APP_BACKEND_URL;
     const token = localStorage.getItem('token');
+    const location = useLocation();
 
     const formattedDate = new Date(blog.updatedAt).toLocaleDateString('en-IN', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
     });
-    const location = useLocation();
 
     const handleClick = () => {
         if (token) {
@@ -27,9 +26,14 @@ export default function BlogItem({ blog, updateBlog }) {
         }
     };
 
-    const handleDelete = () => {
+    const handleDelete = (e) => {
+        e.stopPropagation();
         deleteBlog(blog._id);
-        //props.showAlert("Note deleted successfully!", "success");
+    };
+
+    const handleEdit = (e) => {
+        e.stopPropagation();
+        updateBlog(blog);
     };
 
     useEffect(() => {
@@ -44,7 +48,6 @@ export default function BlogItem({ blog, updateBlog }) {
                 });
                 const json = await response.json();
                 setUser(json);
-
             } catch (error) {
                 console.error("Error fetching user:", error);
             }
@@ -52,16 +55,14 @@ export default function BlogItem({ blog, updateBlog }) {
 
         if (token) {
             fetchUser();
-
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [token]);
+    }, [token, host]);
 
-    const isOwner = user?.username === blog.author?.username;
+    const isOwner = user && blog.author && user.username === blog.author.username;
 
     return (
         <div>
-            <div className="card" style={{ height: '35rem', overflow: 'hidden' }} onClick={handleClick}>
+            <div className="card" style={{ height: '35rem', overflow: 'hidden', cursor: 'pointer' }} onClick={handleClick}>
                 <img
                     src={blog.imageurl}
                     className="card-img-top"
@@ -72,7 +73,7 @@ export default function BlogItem({ blog, updateBlog }) {
                 <div className="card-body d-flex flex-column" style={{ height: 'calc(100% - 200px)' }}>
                     <h5 className="card-title">{blog.title}</h5>
                     <figcaption className="blockquote-footer my-2" style={{ marginLeft: '2rem' }}>
-                        Published by <cite title="Source Title">{blog.author?.username}</cite>
+                        Published by <cite>{blog.author?.username}</cite>
                     </figcaption>
                     <p className="card-text">
                         {DOMPurify.sanitize(blog.content.replace(/<[^>]+>/g, '')).slice(0, 100)}...
@@ -83,28 +84,37 @@ export default function BlogItem({ blog, updateBlog }) {
                     <div>
                         <p>Average Rating: ⭐{blog?.averageRating?.toFixed(1)}/5</p>
                     </div>
-                    <div className="d-flex mt-auto" style={{zIndex:'1'}}>
-                        <button onClick={handleClick} className="btn btn-primary mx-2">Read</button>
-                        {isOwner && location.pathname === '/myblogs' && (
+                    <div className="d-flex mt-auto" style={{ zIndex: '1' }}>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleClick();
+                            }}
+                            className="btn btn-primary mx-2"
+                        >
+                            Read
+                        </button>
+                        {user && isOwner && location.pathname === '/myblogs' && (
                             <>
                                 <div
                                     className="mx-5 my-1"
-                                    onClick={() => {
-                                        updateBlog(blog);
-                                    }}
+                                    onClick={handleEdit}
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <i className="fa-solid fa-pen-to-square"></i>
                                 </div>
 
-                                <div className="mx-3 my-1" style={{ cursor: 'pointer' }} onClick={handleDelete}>
+                                <div
+                                    className="mx-3 my-1"
+                                    onClick={handleDelete}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <i className="fa-solid fa-trash"></i>
                                 </div>
                             </>
                         )}
                     </div>
                 </div>
-
             </div>
         </div>
     );

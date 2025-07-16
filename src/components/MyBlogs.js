@@ -9,13 +9,16 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 
 const MyBlogs = (props) => {
     const navigate = useNavigate();
-    const { blogs, fetchAuthorBlogs, editBlog } = useContext(BlogContext);
+    const context = useContext(BlogContext);
+    const { fetchAuthorBlogs, editBlog } = context;
     const host = process.env.REACT_APP_BACKEND_URL;
 
+    const [authorBlogs, setAuthorBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [username, setUsername] = useState(null);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [totalBlogs, setTotalBlogs] = useState(0);
 
     const [blog, setBlog] = useState({ id: '', ecategory: '', etitle: '', econtent: '', eisprivate: false, eimageurl: '' });
     const [coverUrl, setCoverUrl] = useState('');
@@ -33,7 +36,7 @@ const MyBlogs = (props) => {
         const userToken = localStorage.getItem('token');
         if (!userToken) return navigate('/login');
 
-        const fetchUserAndBlogs = async () => {
+        const fetchUsernameAndBlogs = async () => {
             props.setprogress(10);
             try {
                 const response = await fetch(`${host}/api/auth/getuser`, {
@@ -48,11 +51,17 @@ const MyBlogs = (props) => {
                 props.setprogress(70);
                 if (json?.username) {
                     setUsername(json.username);
-
-                    // Fetch first page of blogs; this updates context blogs
                     const data = await fetchAuthorBlogs(json.username, 1, 6);
-                    setPage(2);
-                    setHasMore(data.blogs.length < data.total);
+                    if (data) {
+                        setAuthorBlogs(data.blogs || []);
+                        setTotalBlogs(data.total || 0);
+                        setPage(2);
+                        if ((data.blogs?.length || 0) >= (data.total || 0)) {
+                            setHasMore(false);
+                        }
+                    } else {
+                        setHasMore(false);
+                    }
                 }
             } catch (error) {
                 console.error("Failed to fetch user or blogs:", error);
@@ -61,16 +70,20 @@ const MyBlogs = (props) => {
             setLoading(false);
         };
 
-        fetchUserAndBlogs();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        fetchUsernameAndBlogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchMoreData = async () => {
         if (!username) return;
-
         const data = await fetchAuthorBlogs(username, page, 6);
-        setPage(prev => prev + 1);
-        if (blogs.length >= data.total) {
+        if (data && data.blogs && data.blogs.length > 0) {
+            setAuthorBlogs(prev => [...prev, ...data.blogs]);
+            setPage(prev => prev + 1);
+            if (authorBlogs.length + data.blogs.length >= totalBlogs) {
+                setHasMore(false);
+            }
+        } else {
             setHasMore(false);
         }
     };
@@ -91,6 +104,18 @@ const MyBlogs = (props) => {
     const handleClick = async (e) => {
         e.preventDefault();
         await editBlog(blog.id, blog.etitle, blog.econtent, blog.eimageurl, blog.eisprivate, blog.ecategory);
+
+        setAuthorBlogs((prevBlogs) =>
+            prevBlogs.map(b => b._id === blog.id ? {
+                ...b,
+                title: blog.etitle,
+                content: blog.econtent,
+                imageurl: blog.eimageurl,
+                isprivate: blog.eisprivate,
+                category: blog.ecategory
+            } : b)
+        );
+
         refClose.current?.click();
         props?.showAlert?.("Blog Updated Successfully!!", "success");
     };
@@ -135,18 +160,10 @@ const MyBlogs = (props) => {
 
     return (
         <div style={{ flexWrap: 'wrap', marginTop: '1rem' }}>
-            {/* Hidden Modal Trigger */}
-            <button
-                type="button"
-                ref={ref}
-                className="btn btn-primary d-none"
-                data-bs-toggle="modal"
-                data-bs-target="#exampleModal"
-            >
+            <button type="button" ref={ref} className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 Open Modal
             </button>
 
-            {/* Edit Modal */}
             <div className="modal fade" id="exampleModal" tabIndex="-1" aria-hidden="true">
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
@@ -175,18 +192,8 @@ const MyBlogs = (props) => {
                                 <button className="btn btn-secondary mt-2" disabled={uploadimage} onClick={uploadCover}>
                                     {uploadimage ? 'Uploading...' : 'Upload Cover'}
                                 </button>
-
-                                {uploadimage && (
-                                    <div className="mt-2 mx-5">
-                                        <Spinner />
-                                    </div>
-                                )}
-
-                                {!uploadimage && coverUrl && (
-                                    <div className="mt-3">
-                                        <img src={coverUrl} alt="Cover Preview" width="300" />
-                                    </div>
-                                )}
+                                {uploadimage && <div className="mt-2 mx-5"><Spinner /></div>}
+                                {!uploadimage && coverUrl && <div className="mt-3"><img src={coverUrl} alt="Cover Preview" width="300" /></div>}
                             </div>
 
                             <div className="mb-3">
@@ -229,12 +236,7 @@ const MyBlogs = (props) => {
                         </div>
                         <div className="modal-footer d-flex justify-content-end gap-2 mt-2">
                             <button ref={refClose} type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button
-                                type="button"
-                                className="btn btn-primary"
-                                onClick={handleClick}
-                                disabled={blog.etitle.length < 5 || blog.econtent.length < 5}
-                            >
+                            <button type="button" className="btn btn-primary" onClick={handleClick} disabled={blog.etitle.length < 5 || blog.econtent.length < 5}>
                                 Save Changes
                             </button>
                         </div>
@@ -242,7 +244,6 @@ const MyBlogs = (props) => {
                 </div>
             </div>
 
-            {/* Blog List */}
             <div className='container my-3 text-center'>
                 <h2>VibeNest - Your Blogs</h2>
             </div>
@@ -251,7 +252,7 @@ const MyBlogs = (props) => {
                 <div className="d-flex justify-content-center my-5"><Spinner /></div>
             ) : (
                 <InfiniteScroll
-                    dataLength={blogs.length}
+                    dataLength={authorBlogs.length}
                     next={fetchMoreData}
                     hasMore={hasMore}
                     loader={<div className="d-flex justify-content-center my-3"><Spinner /></div>}
@@ -259,8 +260,8 @@ const MyBlogs = (props) => {
                 >
                     <div className='container my-3'>
                         <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
-                            {blogs.length > 0 ? (
-                                blogs.map((blog) => (
+                            {Array.isArray(authorBlogs) && authorBlogs.length > 0 ? (
+                                authorBlogs.map((blog) => (
                                     <div key={blog._id} className="col d-flex justify-content-center">
                                         <BlogItem blog={blog} updateBlog={updateBlog} />
                                     </div>

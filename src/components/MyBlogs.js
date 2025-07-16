@@ -28,7 +28,7 @@ const MyBlogs = (props) => {
     const [uploadimage, setUploadimage]=useState(false);
 
     const categories = [
-        'General', 'Technology', 'Health', 'Travel', 'Lifestyle',
+        'General', 'Technology', 'Health', 'Travel', 'Lifestyle','Love',
         'Finance', 'Food', 'Education', 'Entertainment', 'Spiritual'
     ];
 
@@ -277,7 +277,7 @@ const MyBlogs = (props) => {
                     <div className='container my-3'>
                         <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
                             {Array.isArray(blogs) && blogs.length > 0 ? (
-                                [...blogs].reverse().map((blog) => (
+                                [...blogs].map((blog) => (
                                     <div key={blog._id} className="col d-flex justify-content-center">
                                         <BlogItem blog={blog} updateBlog={updateBlog} />
                                     </div>

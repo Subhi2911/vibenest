@@ -26,6 +26,7 @@ export default function AddBlog() {
         'Health',
         'Travel',
         'Lifestyle',
+        'Love',
         'Finance',
         'Food',
         'Education',
@@ -106,11 +107,11 @@ export default function AddBlog() {
                             setBlog({ ...blog, isprivate: e.target.checked })
                         }
                     />
-                    <label className="form-check-label" for="switchCheckDefault" style={{ fontWeight: '500' }}>{`Change to ${blog.isprivate ? " Public Blog" : " Private Blog"}`}</label>
+                    <label className="form-check-label" htmlFor="switchCheckDefault" style={{ fontWeight: '500' }}>{`Change to ${blog.isprivate ? " Public Blog" : " Private Blog"}`}</label>
                 </div>
             </div>
             <div className="mb-3">
-                <label htmlFor="cover" className="form-label" style={{ fontWeight: '500' }}>Cover Image</label>
+                <label htmlhtmlFor="cover" className="form-label" style={{ fontWeight: '500' }}>Cover Image</label>
                 <input type="file" className="form-control" onChange={handleCoverChange} />
                 <button className="btn btn-secondary mt-2" disabled={uploadimage} onClick={uploadCover}>
                     {uploadimage ? 'Uploading...' : 'Upload Cover'}
@@ -141,7 +142,7 @@ export default function AddBlog() {
             </div>
 
             <div className="mb-3">
-                <label htmlFor="title" className="form-label" style={{ fontWeight: '500' }}>Blog Title</label>
+                <label htmlhtmlFor="title" className="form-label" style={{ fontWeight: '500' }}>Blog Title</label>
                 <input
                     type="text"
                     className="form-control"
@@ -156,7 +157,7 @@ export default function AddBlog() {
             </div>
 
             <div className="mb-3">
-                <label htmlFor="content" className="form-label" style={{ fontWeight: '500' }}>Content</label>
+                <label htmlhtmlFor="content" className="form-label" style={{ fontWeight: '500' }}>Content</label>
                 <ReactQuill
                     theme="snow"
                     value={content}

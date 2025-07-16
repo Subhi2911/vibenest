@@ -35,6 +35,7 @@ export default function CategoryNavbar() {
                         <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Health' ? 'active' : ''}`} style={{ color: '#43A047', ...myStyle }}  to='/Health'>Health & Wellness</Link></li>
                         <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Travel' ? 'active' : ''}`} style={{ color: '#F4511E', ...myStyle }}  to='/Travel'>Travel & Adventure</Link></li>
                         <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Lifestyle' ? 'active' : ''}`} style={{ color: '#8E24AA', ...myStyle }}  to='/Lifestyle'>Lifestyle</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Love' ? 'active' : ''}`} style={{ color: '#DC2525', ...myStyle }}  to='/Love'>Love</Link></li>
                         <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Finance' ? 'active' : ''}`} style={{ color: '#3949AB', ...myStyle }}  to='/Finance'>Finance & Business</Link></li>
                         <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Food' ? 'active' : ''}`} style={{ color: '#D81B60', ...myStyle }}  to='/Food'>Food & Recipes</Link></li>
                         <li className="nav-item"><Link className={`nav-link ${location.pathname === '/Education' ? 'active' : ''}`} style={{ color: '#FB8C00', ...myStyle }}  to='/Education'>Education & Learning</Link></li>

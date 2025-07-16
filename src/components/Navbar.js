@@ -26,7 +26,7 @@ export default function Navbar() {
         };
         load();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [token]);
+    }, [token,fetchNotifications]);
 
     const closeOffcanvas = () => {
         const bsOffcanvas = window.bootstrap.Offcanvas.getInstance(offcanvasRef.current);
@@ -115,7 +115,7 @@ export default function Navbar() {
                                 data-bs-target="#userOffcanvas"
                                 aria-controls="userOffcanvas"
                             >
-                                <Avatar name={user.username} width="2" height="2" size="18" />
+                                <Avatar name={user.username} width="2" height="2" size="12" />
                             </div>
                         ) : (
                             <Link to="/signup" className="btn btn-outline-primary px-2 py-1" style={{ fontSize: '0.8rem' }}>
@@ -165,9 +165,10 @@ export default function Navbar() {
                         <h6 className="mx-2 pt-3">Categories</h6>
                         {[
                             { to: '/Technology', icon: 'fa-sim-card', label: 'Technology' },
-                            { to: '/Health', icon: 'fa-heart', label: 'Health & Wellness' },
+                            { to: '/Health', icon: 'fa-suitcase-medical', label: 'Health & Wellness' },
                             { to: '/Travel', icon: 'fa-bus', label: 'Travel & Adventure' },
                             { to: '/Lifestyle', icon: 'fa-dna', label: 'Lifestyle' },
+                            { to: '/love', icon: 'fa-heart', label: 'Love'},
                             { to: '/Finance', icon: 'fa-business-time', label: 'Finance & Business' },
                             { to: '/Food', icon: 'fa-utensils', label: 'Food & Recipes' },
                             { to: '/Education', icon: 'fa-school', label: 'Education & Learning' },

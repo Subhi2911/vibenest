@@ -87,7 +87,6 @@ export default function Read(props) {
                 <hr />
 
                 <div className="d-flex justify-content-center">
-                    <p className="mx-3 my-2">Rate The Blog</p>
                     <Ratings
                         blogId={blog._id}
                         initialRating={blog.averageRating}
@@ -106,7 +105,7 @@ export default function Read(props) {
                     />
                 </div>
 
-                <div className="d-flex justify-content-center">
+                <div className="d-flex justify-content-center my-3">
                     <p>
                         Click to know more about the author{' '}
                         <Link style={{ fontStyle: 'italic' }} to={`/aboutauthor/${blog.author?.username}`}>

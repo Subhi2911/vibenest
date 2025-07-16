@@ -16,18 +16,21 @@ export default function Blogs(props) {
         const loadInitialBlogs = async () => {
             props.setprogress(10);
             const data = await getBlogs(1, limit);
-            props.setprogress(30);
+            props.setprogress(50);
             if (data && data.blogs) {
                 setBlogs(data.blogs);
                 setTotalBlogs(data.total);
                 setPage(2);
+                props.setprogress(70);
                 if (data.blogs.length >= data.total) {
                     setHasMore(false);
+                    props.setprogress(100);
                 }
             } else {
                 setHasMore(false);
+                props.setprogress(100);
             }
-            props.setprogress(100);
+           
         };
         loadInitialBlogs();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -36,7 +39,13 @@ export default function Blogs(props) {
     const fetchMoreData = async () => {
         const data = await getBlogs(page, limit);
         if (data && data.blogs && data.blogs.length > 0) {
-            setBlogs(prev => [...prev, ...data.blogs]);
+            setBlogs(prev => {
+                // Create a map of existing blog IDs
+                const existingIds = new Set(prev.map(b => b._id));
+                // Filter new blogs to only those not already present
+                const newBlogs = data.blogs.filter(b => !existingIds.has(b._id));
+                return [...prev, ...newBlogs];
+            });
             setPage(prev => prev + 1);
             if (blogs.length + data.blogs.length >= totalBlogs) {
                 setHasMore(false);
@@ -45,6 +54,7 @@ export default function Blogs(props) {
             setHasMore(false);
         }
     };
+
 
     return (
         <div style={{ marginTop: '1rem', overflowX: 'hidden' }}> {/* Prevent horizontal scroll */}

@@ -12,7 +12,6 @@ const Login = (props) => {
     const handleSubmit = async (e) => {
         props.setprogress(0);
         e.preventDefault();
-        //fetch("http://localhost:5000/api/auth/login")
         props.setprogress(30);
         const response = await fetch(`${host}/api/auth/login`, {
             method: "POST",
@@ -28,13 +27,14 @@ const Login = (props) => {
         if (json.success) {
             //save the token and resirect
             localStorage.setItem('token', json.authToken);
-            //props.showAlert("Logged in Successfully!! ","success" )
+            props.showAlert("Logged in Successfully!! ","success" )
             navigate('/');
             props.setprogress(100)
 
         }
         else {
-            //props.showAlert(json.error,"danger" )
+            props.showAlert(json.error,"danger" )
+            props.setprogress(100);
         }
     }
 

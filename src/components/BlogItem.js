@@ -61,7 +61,7 @@ export default function BlogItem({ blog, updateBlog }) {
 
     return (
         <div>
-            <div className="card" style={{ height: '35rem', overflow: 'hidden' }}>
+            <div className="card" style={{ height: '35rem', overflow: 'hidden' }} onClick={handleClick}>
                 <img
                     src={blog.imageurl}
                     className="card-img-top"

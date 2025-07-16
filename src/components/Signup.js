@@ -14,7 +14,7 @@ const Signup = (props) => {
         e.preventDefault();
 
         if (credentials.password !== credentials.cpassword) {
-            //props.showAlert("Passwords do not match", "danger");
+            props.showAlert("Passwords do not match", "danger");
             return;
         }
 
@@ -46,14 +46,15 @@ const Signup = (props) => {
 
                 navigate("/");
                 props.setprogress(100);
-                //props.showAlert("Account Created Successfully!", "success");
+                props.showAlert("Account Created Successfully!", "success");
             } else {
                 console.error(json.error)
-                //props.showAlert(json.error || "Signup failed", "danger");
+                props.showAlert(json.error || "Signup failed", "danger");
             }
         } catch (err) {
             console.error("Network error:", err);
-            //props.showAlert("Network error. Please try again later.", "danger");
+            props.showAlert("Network error. Please try again later.", "danger");
+            props.setprogress(100);
         }
     };
 

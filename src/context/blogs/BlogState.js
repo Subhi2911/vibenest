@@ -101,7 +101,7 @@ const BlogState = (props) => {
             if (!response.ok) throw new Error(`Error: ${response.status}`);
 
             const json = await response.json();
-            
+
             return {
                 blogs: Array.isArray(json.blogs) ? json.blogs : [],
                 total: json.total || 0,
@@ -188,17 +188,82 @@ const BlogState = (props) => {
                 return;
             }
 
-            const data = await response.json();
-            setNotification(data.notifications);
+            const json = await response.json();
+            setNotification(Array.isArray(json) ? json : json.nottification || []);
         } catch (err) {
             console.error("Error fetching notifications:", err);
+        }
+    };
+    // Fetch ratings for a blog (average + user rating)
+    const fetchRatings = async (blogId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${host}/api/blogs/${blogId}/ratings`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'auth-token': token }),
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ratings: ${response.status}`);
+            }
+
+            const json = await response.json();
+            // Expected: { averageRating: number, userRating: number }
+            return json;
+        } catch (error) {
+            console.error("Rating fetch error:", error);
+            return { averageRating: 0, userRating: 0 };
+        }
+    };
+
+    // Submit a rating for a blog
+    const submitRating = async (blogId, rating) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error("User not authenticated");
+
+            const response = await fetch(`${host}/api/blogs/${blogId}/rate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'auth-token': token,
+                },
+                body: JSON.stringify({ rating }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to submit rating: ${response.status}`);
+            }
+
+            const json = await response.json();
+            return json; // e.g. { success: true, averageRating: number }
+        } catch (error) {
+            console.error("Rating submit error:", error);
+            return { success: false };
         }
     };
 
 
 
     return (
-        <BlogContext.Provider value={{ blogs, getBlogs, addBlog, deleteBlog, getBlogById, fetchAuthorBlogs, editBlog, fetchCatBlogs, fetchNotifications, notification }}>
+        <BlogContext.Provider 
+            value={{ 
+                blogs, 
+                getBlogs, 
+                addBlog, 
+                deleteBlog, 
+                getBlogById, 
+                fetchAuthorBlogs, 
+                editBlog, 
+                fetchCatBlogs, 
+                fetchNotifications, 
+                notification, 
+                submitRating, 
+                fetchRatings 
+            }}>
             {props.children}
         </BlogContext.Provider>
     )
